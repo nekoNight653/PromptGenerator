@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PromptGenerator:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/PromptGenerator_jar</output-path>
+    <root id="archive" name="PromptGenerator.jar">
+      <element id="module-output" name="PromptGenerator" />
+    </root>
+  </artifact>
+</component>
