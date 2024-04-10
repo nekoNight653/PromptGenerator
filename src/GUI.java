@@ -9,8 +9,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
-//Maybe make a way to delete specific prompts
-//*This will first require a way to delete prompts then a way for the user to specify which prompt to delete
 public class GUI implements ActionListener {
 
     private final Prompts prompts = new Prompts();
