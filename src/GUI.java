@@ -4,6 +4,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,6 +15,7 @@ public class GUI implements ActionListener {
     private final Prompts prompts = new Prompts();
 
     private static final String ADD_GENRE_BUTTON_NAME = "Add genre";
+    private static final String DELETE_GENRE_BUTTON_NAME = "Delete genre";
     private static final String ADD_BUTTON_NAME = "Add prompt";
     private static final String GET_BUTTON_NAME = "Get X random prompts";
     private static final String DELETE_BUTTON_NAME = "Delete prompt";
@@ -33,6 +35,8 @@ public class GUI implements ActionListener {
 
     //The button for adding genres
     private JButton addGenreButton;
+    //The button for deleting genres
+    private JButton deleteGenreButton;
     //The button for adding prompts
     private JButton addButton;
     //The button for deleting prompts
@@ -46,6 +50,8 @@ public class GUI implements ActionListener {
 
     //The input for which genre to add
     private JTextField genreToAdd;
+    //The input for which genre to delete
+    private JTextField genreToDelete;
     //The input for adding a prompt
     private JTextField promptToAdd;
     //The number of how many random prompts you want to get
@@ -64,6 +70,9 @@ public class GUI implements ActionListener {
     //Maps the name of the buttons to the function of the buttons
     private final HashMap<String, Runnable> buttonFuncts = new HashMap<>();
     public void gui() {
+
+        int y = 0;
+
         GridBagConstraints gbc = new GridBagConstraints();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
@@ -89,27 +98,41 @@ public class GUI implements ActionListener {
         addGenreButton.setFont(controlFont);
         buttonFuncts.put(ADD_GENRE_BUTTON_NAME, this::addGenre);
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = y;
         controlPanel.add(addGenreButton, gbc);
 
         genreToAdd = new JTextField();
         genreToAdd.setFont(controlFont);
         gbc.gridx = 1;
-        gbc.gridy = 0;
+        gbc.gridy = y;
         controlPanel.add(genreToAdd, gbc);
+
+        deleteGenreButton = new JButton(DELETE_GENRE_BUTTON_NAME);
+        deleteGenreButton.addActionListener(this);
+        deleteGenreButton.setFont(controlFont);
+        buttonFuncts.put(DELETE_GENRE_BUTTON_NAME, this::deleteGenre);
+        gbc.gridx = 0;
+        gbc.gridy = ++y;
+        controlPanel.add(deleteGenreButton, gbc);
+
+        genreToDelete = new JTextField();
+        genreToDelete.setFont(controlFont);
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        controlPanel.add(genreToDelete, gbc);
 
         addButton = new JButton(ADD_BUTTON_NAME);
         addButton.addActionListener(this);
         addButton.setFont(controlFont);
         buttonFuncts.put(ADD_BUTTON_NAME, this::addPrompt);
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = ++y;
         controlPanel.add(addButton, gbc);
 
         promptToAdd = new JTextField();
         promptToAdd.setFont(controlFont);
         gbc.gridx = 1;
-        gbc.gridy = 1;
+        gbc.gridy = y;
         controlPanel.add(promptToAdd, gbc);
 
 
@@ -119,14 +142,14 @@ public class GUI implements ActionListener {
         deleteButton.setFont(controlFont);
         buttonFuncts.put(DELETE_BUTTON_NAME, this::deletePrompt);
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = ++y;
         controlPanel.add(deleteButton, gbc);
 
 
         promptToDelete = new JTextField();
         promptToDelete.setFont(controlFont);
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = y;
         controlPanel.add(promptToDelete, gbc);
 
 
@@ -135,13 +158,13 @@ public class GUI implements ActionListener {
         getButton.setFont(controlFont);
         buttonFuncts.put(GET_BUTTON_NAME, this::outputXPrompts);
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = ++y;
         controlPanel.add(getButton, gbc);
 
         getPromptNum = new JTextField();
         getPromptNum.setFont(controlFont);
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = y;
         controlPanel.add(getPromptNum, gbc);
 
 
@@ -150,7 +173,7 @@ public class GUI implements ActionListener {
         getAllButton.setFont(controlFont);
         buttonFuncts.put(GET_ALL_BUTTON_NAME, this::outputAllPromptsSpaced);
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = ++y;
         controlPanel.add(getAllButton, gbc);
 
         clearWindowButton = new JButton(CLEAR_WINDOW_BUTTON_NAME);
@@ -158,7 +181,7 @@ public class GUI implements ActionListener {
         clearWindowButton.setFont(controlFont);
         buttonFuncts.put(CLEAR_WINDOW_BUTTON_NAME, () -> output.setText(""));
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = y;
         controlPanel.add(clearWindowButton, gbc);
 
 
@@ -224,6 +247,9 @@ public class GUI implements ActionListener {
 
     }
 
+    //Creates a genre.txt file (Uses the input in the text field genreToAdd)
+    //unless the name is blank, or the file already exists, or there was an unforeseen error
+    //In which case it tells you what the problem was
     private void addGenre() {
         String genreName = genreToAdd.getText();
 
@@ -234,13 +260,24 @@ public class GUI implements ActionListener {
 
         int addGenreReturn = prompts.createNewGenre(genreName);
         if(addGenreReturn == 1) {
-            addOutputText("Genre " + genreName + " added", styleDarkOrange);
+            addOutputText("Genre \"" + genreName + "\" added", styleDarkOrange);
         } else if (addGenreReturn == 0) {
             addOutputText("Genre \"" + genreName + "\" already exists", styleRed);
         } else {
             addOutputText("Problem adding genre \"" + genreName + "\"", styleRed);
         }
     }
+
+    //Deletes a genre (Uses the input in the textField genreToAdd)
+    //Or if a problem occurred it will say "couldn't delete genre file "name of requested genre to delete" "
+    private void deleteGenre() {
+        String genreName = genreToDelete.getText();
+
+        if(prompts.deleteGenre(genreName)) addOutputText("Genre \"" + genreName + "\" deleted", styleDarkOrange);
+
+        else addOutputText("Failed to delete genre file \"" + genreName + "\"", styleRed);
+    }
+
 
     //Writes a prompt to the prompt file
     //Then outputs dark orange text telling the user what prompt they wrote

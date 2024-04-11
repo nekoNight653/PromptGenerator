@@ -77,7 +77,7 @@ public class Prompts {
     * 0 if the file already exists
     * -1 if an unexpected error occurred
     *
-    * This juts creates a new txt file with the string passed in as the name
+    * This just creates a new txt file with the string passed in as the name
      */
     public int createNewGenre(String name) {
         if(!promptsFolder.exists()) promptsFolder.mkdir();
@@ -118,6 +118,11 @@ public class Prompts {
             return -1;
         }
 
+    }
+
+    public boolean deleteGenre(String genreName) {
+        File genre = new File(promptsFolder, genreName + ".txt");
+        return genre.delete();
     }
 
 
