@@ -1,14 +1,11 @@
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 //Just a class handling all things to do with the prompts folder
 public class Prompts {
     public static final File PROMPTS = new File(System.getProperty("user.dir"), "Prompts.txt");
-    public static final File promptsFolder = new File(System.getProperty("user.dir"), "Prompts");
+    public static final File PROMPTS_FOLDER = new File(System.getProperty("user.dir"), "Prompts");
 
     //Just creates the prompts folder with some starting text explaining how it works
     private void createPromptsFile() {
@@ -46,28 +43,19 @@ public class Prompts {
     //Returns an array list of all the files in the prompt folder
     public ArrayList<File> getGenres() {
         ArrayList<File> genres = new ArrayList<File>();
-        if(!promptsFolder.exists()) promptsFolder.mkdir();
+        if(!PROMPTS_FOLDER.exists()) PROMPTS_FOLDER.mkdir();
 
-        Collections.addAll(genres, promptsFolder.listFiles());
+        Collections.addAll(genres, PROMPTS_FOLDER.listFiles());
         return genres;
     }
 
-    //Maybe it's a bit premature to add this, but I'm fairly sure I'll need just the names in multiple places in the gui class
-    //All this does is loops through all the files in Prompts and gets the lastIndexOf '\' + 1
-    //Then gets that substring and adds it to an arrayList<String>
+    //All this does is loops through all the files in Prompts and gets the name - the .txt
+    //Then it adds them to the arrayList of names
     public ArrayList<String> getGenreNames() {
 
         ArrayList<String> fileNames = new ArrayList<>();
         for (File genre : getGenres()) {
-
-            String unparsedFilePath = genre.toString();
-            String name;
-
-            int nameStart = unparsedFilePath.lastIndexOf('\\');
-
-            name = unparsedFilePath.substring(nameStart + 1);
-            name = name.replace(".txt", "");
-
+            String name = genre.getName().replace(".txt", "");
             fileNames.add(name);
         }
 
@@ -82,9 +70,9 @@ public class Prompts {
     * This just creates a new txt file with the string passed in as the name
      */
     public int createNewGenre(String name) {
-        if(!promptsFolder.exists()) promptsFolder.mkdir();
+        if(!PROMPTS_FOLDER.exists()) PROMPTS_FOLDER.mkdir();
 
-        File newGenre = new File (promptsFolder, name + ".txt");
+        File newGenre = new File (PROMPTS_FOLDER, name + ".txt");
 
 
 
@@ -125,59 +113,87 @@ public class Prompts {
     }
 
     public boolean deleteGenre(String genreName) {
-        File genre = new File(promptsFolder, genreName + ".txt");
+        File genre = new File(PROMPTS_FOLDER, genreName + ".txt");
         return genre.delete();
     }
 
 
-    //This method reads the whole Prompts.txt file and if it has any prompts
-    //it adds them to the array list then returns the array list
-    //Prompts are contained within a single line and are not blankSpace and don't contain any *
-    public ArrayList<String> getPrompts() {
-        ArrayList<String> promptList = new ArrayList<String>();
+    public ArrayList<Prompt> getPrompts(File genre){
+        ArrayList<Prompt> promptList = new ArrayList<Prompt>();
 
-        if(!PROMPTS.exists()) {
-            createPromptsFile();
+        if(!PROMPTS_FOLDER.exists()) {
+            PROMPTS_FOLDER.mkdir();
             return promptList;
         }
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(PROMPTS));
+            BufferedReader reader = new BufferedReader(new FileReader(genre));
             String line;
             try {
-                while ((line = reader.readLine()) != null){
-                    if(!line.contains("*") && !line.isBlank()) {
-                        promptList.add(line);
+                while ((line = reader.readLine()) != null) {
+                    if (!line.contains("*") && !line.isBlank()) {
+                        promptList.add(new Prompt(line, genre));
                     }
                 }
 
             } catch (IOException e) {
-                System.out.println("Problem reading file: " + PROMPTS);
+                System.out.println("Problem reading file: " + genre);
                 e.printStackTrace();
             }
 
         } catch (FileNotFoundException e) {
-            System.out.println("File " + PROMPTS + " not found.. odd I thought I just checked if it existed?");
+            System.out.println("File " + genre + " not found");
             e.printStackTrace();
+        }
+
+        return promptList;
+    }
+
+
+    //This method reads each genre file in the past in array
+    //it adds all prompts to the hash map with their respective file
+    //Prompts are contained within a single line and are not blankSpace and don't contain any *
+    public ArrayList<Prompt> getPrompts(ArrayList<File> genres) {
+        //The first is a prompt and the second is the file it's contained in
+        ArrayList<Prompt> promptList = new ArrayList<Prompt>();
+
+        for(File genre : genres) {
+            promptList.addAll(getPrompts(genre));
         }
         return promptList;
     }
 
     //This gets a select amount of prompts randomly from the list of all prompts
-    public ArrayList<String> getXRandomPrompts(long number) {
-        ArrayList<String> randomPrompts = new ArrayList<String>();
-        ArrayList<String> allPrompts = getPrompts();
+    public ArrayList<Prompt> getXRandomPrompts(HashMap<File, Integer> specifications) {
+        ArrayList<Prompt> randomPrompts = new ArrayList<Prompt>();
+        ArrayList<File> genres = new ArrayList<>(specifications.keySet());
+
+        ArrayList<Prompt> allPrompts = getPrompts(genres);
         Random random = new Random();
 
-        if(number > allPrompts.size()) {
-            System.out.println("Number of prompts not sufficient for number of prompts wanted(" + number + "). Returning all prompts instead");
+        int summedNum = 0;
+        for (int i : specifications.values()) summedNum = summedNum + i;
+
+
+        if(summedNum > allPrompts.size()) {
+            System.out.println("Number of prompts not sufficient for number of prompts wanted(" + summedNum + "). Returning all prompts instead");
             return allPrompts;
         }
 
-        for(int i = 0; i < number; i++) {
-            int index = random.nextInt(allPrompts.size());
-            randomPrompts.add(allPrompts.get(index));
-            allPrompts.remove(index);
+        for(File genre : genres) {
+            //We do this because my method takes an array list.. I really feel like there's probably a better way,
+            //but I'm in the middle of a massive change.. I'll try and make improvements afterwords
+            ArrayList<File> currentGenre = new ArrayList<>();
+            currentGenre.add(genre);
+            ArrayList<Prompt> prompts = getPrompts(currentGenre);
+            currentGenre.clear();
+
+            for (int i = 0; i < specifications.get(genre); i++) {
+                int index = random.nextInt(prompts.size());
+                //Is there a better way to get a specific random key of a map.. I hope there is
+                randomPrompts.add(prompts.get(index));
+                prompts.remove(index);
+            }
         }
         return randomPrompts;
     }
@@ -257,12 +273,12 @@ public class Prompts {
     //This extra prompt is to write it in japanese. I only did this because I know who is going to be using this
     //Since it's an extra prompt you will still get all your original prompts
     //That means you can just choose to ignore the japanese prompt if you so desire
-    public ArrayList<String> getXPromptsJp(long number) {
-        ArrayList<String> randPrompts = getXRandomPrompts(number);
+    public ArrayList<Prompt> getXPromptsJp(HashMap<File, Integer> specifications) {
+        ArrayList<Prompt> randPrompts = getXRandomPrompts(specifications);
         Random random = new Random();
 
         if(random.nextInt(30) == 0) {
-            randPrompts.add("Surprise extra prompt! 日本語で書きます");
+            randPrompts.add(new Prompt("Surprise extra prompt! 日本語で書きます", PROMPTS_FOLDER));
         }
         return randPrompts;
     }

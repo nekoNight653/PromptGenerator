@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
@@ -36,35 +35,32 @@ public class GUI implements ActionListener {
 
 
     //Genre related buttons
-    //The button for adding genres
-    private JButton addGenreButton;
-    //The button for deleting genres
-    private JButton deleteGenreButton;
-    //The button for getting all genres
-    private JButton getGenresButton;
+    /*
+    * addGenreButton is the button for adding genres
+    * deleteGenreButton is the button for deleting genres
+    * getGenresButton is the button for getting all genres
+    */
+    private JButton addGenreButton, deleteGenreButton, getGenresButton;
 
     //Prompt related buttons
-    //The button for adding prompts
-    private JButton addButton;
-    //The button for deleting prompts
-    private JButton deleteButton;
-    //The button for getting prompts X random prompts where X is inputted by the user
-    private JButton getButton;
-    //The button for getting all prompts
-    private JButton getAllButton;
-    //The button for clearing the output window
-    private JButton clearWindowButton;
+    /*
+    * addButton is the button for adding prompts
+    * deleteButton is the button for deleting prompts
+    * getButton is the button for getting prompts X random prompts where X is inputted by the user
+    * getAllButton is the button for getting all prompts
+    * clearWindowButton is the button for clearing the output window
+    */
+    private JButton addButton, deleteButton, getButton, getAllButton, clearWindowButton;
 
-    //The input for which genre to add
-    private JTextField genreToAdd;
-    //The input for which genre to delete
-    private JTextField genreToDelete;
-    //The input for adding a prompt
-    private JTextField promptToAdd;
-    //The number of how many random prompts you want to get
-    private JTextField getPromptNum;
-    //The specifier for which prompt you want to delete
-    private JTextField promptToDelete;
+    /* The text fields
+    * genreToAdd is the input for which genre to add
+    * genreToDelete is the input for which genre to delete
+    * promptToAdd is the input for adding a prompt
+    * getPromptNum is the number of how many random prompts you want to get
+    * promptToDelete is the specifier for which prompt you want to delete
+    */
+    private JTextField genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete;
+
 
     /*
     * Dark orange is used for text that is important such as writing and deleting prompts
@@ -73,6 +69,10 @@ public class GUI implements ActionListener {
     * And for all other cases you use null for the normal black text
      */
     private Style styleRed, styleDarkOrange;
+    /*
+    * control font is size 20 and the font for all the control panel buttons
+    * outputFont font is size 15 and the font for the output panel
+    */
     private Font controlFont, outputFont;
     //Maps the name of the buttons to the function of the buttons
     private final HashMap<String, Runnable> buttonFuncts = new HashMap<>();
@@ -340,14 +340,28 @@ public class GUI implements ActionListener {
     //Just outputs all prompts 1 per line with a number for which one it is
     //This method is used in two places so i don't print a new line before and after it, but I heavily suggest you do that in most situations
     private void outputAllPrompts() {
-        ArrayList<String> promptList = prompts.getPrompts();
-        promptList.sort(Collections.reverseOrder());
-        int promptNum = promptList.size() + 1;
+
+//        promptList.sort(Collections.reverseOrder());
+
 
         //This is so that it prints 1 per line which makes it far more readable
-        for(String aPrompt : promptList) {
-            promptNum--;
-            addOutputText(promptNum + ": " + aPrompt, null);
+        for(File genre : prompts.getGenres()) {
+            int promptNum = prompts.getPrompts(genre).size() + 1;
+
+            ArrayList<Prompt> promptList = prompts.getPrompts(genre);
+            ArrayList<String> stringPrompts = new ArrayList<>();
+
+            for(Prompt prompt : promptList) {
+                stringPrompts.add(prompt.getPrompt());
+            }
+            stringPrompts.sort(Comparator.reverseOrder());
+
+            for (String prompt : stringPrompts) {
+                promptNum--;
+                addOutputText(promptNum + ": " + prompt, null);
+            }
+
+            addOutputText(genre.getName().replace(".txt", "") + ":", null);
         }
     }
     //The reason I have this is the outputAllPrompts method is used in two places, so I can't do this inside it.
@@ -361,52 +375,52 @@ public class GUI implements ActionListener {
     //Outputs x random prompts
     //This happens to be the biggest button function purely because of how many different problems it can have
     private void outputXPrompts() {
-        int num;
-        //We make sure it's actually a number
-        try {
-
-            num = Integer.parseInt(getPromptNum.getText());
-
-        } catch (NumberFormatException formatException) {
-
-            //In case they put a non integer
-            addOutputText("Tried to get prompts without giving a proper integer.", styleRed);
-            formatException.printStackTrace();
-            return;
-        }
-        //If it's greater than 0 we get prompts
-        if(num > 0) {
-
-            long promptListSize = prompts.getPrompts().size();
-            //If the number is equal to or bigger than the size of all the prompts, we just print them all,
-            //while telling the user it's all prompts
-            if (num >= promptListSize){
-
-                addOutputText("", null);
-                outputAllPrompts();
-                addOutputText(
-                        "Number of prompts requested(" + num +  ") equal to or greater than number of prompts available(" + promptListSize
-                                + "), all prompts returned:", null);
-
-                addOutputText("", null);
-
-                return;
-            }
-
-            ArrayList<String> randomPromptList = prompts.getXPromptsJp(num);
-            randomPromptList.sort(Comparator.reverseOrder());
-
-            addOutputText("", null);
-
-            //Here's where we actually print out the random prompts
-            for(String randPrompt : randomPromptList) {
-                addOutputText(randPrompt, null);
-            }
-            addOutputText("", null);
-
-            //Otherwise we tell the user they input a number too low
-        } else {
-            addOutputText("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", styleRed);
-        }
+//        int num;
+//        //We make sure it's actually a number
+//        try {
+//
+//            num = Integer.parseInt(getPromptNum.getText());
+//
+//        } catch (NumberFormatException formatException) {
+//
+//            //In case they put a non integer
+//            addOutputText("Tried to get prompts without giving a proper integer.", styleRed);
+//            formatException.printStackTrace();
+//            return;
+//        }
+//        //If it's greater than 0 we get prompts
+//        if(num > 0) {
+//
+//            long promptListSize = prompts.getPrompts().size();
+//            //If the number is equal to or bigger than the size of all the prompts, we just print them all,
+//            //while telling the user it's all prompts
+//            if (num >= promptListSize){
+//
+//                addOutputText("", null);
+//                outputAllPrompts();
+//                addOutputText(
+//                        "Number of prompts requested(" + num +  ") equal to or greater than number of prompts available(" + promptListSize
+//                                + "), all prompts returned:", null);
+//
+//                addOutputText("", null);
+//
+//                return;
+//            }
+//
+//            ArrayList<String> randomPromptList = prompts.getXPromptsJp(num);
+//            randomPromptList.sort(Comparator.reverseOrder());
+//
+//            addOutputText("", null);
+//
+//            //Here's where we actually print out the random prompts
+//            for(String randPrompt : randomPromptList) {
+//                addOutputText(randPrompt, null);
+//            }
+//            addOutputText("", null);
+//
+//            //Otherwise we tell the user they input a number too low
+//        } else {
+//            addOutputText("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", styleRed);
+//        }
     }
 }
