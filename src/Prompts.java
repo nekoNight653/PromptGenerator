@@ -44,7 +44,7 @@ public class Prompts {
 
 
     //Returns an array list of all the files in the prompt folder
-    public ArrayList<File> getPromptGenres() {
+    public ArrayList<File> getGenres() {
         ArrayList<File> genres = new ArrayList<File>();
         if(!promptsFolder.exists()) promptsFolder.mkdir();
 
@@ -58,7 +58,7 @@ public class Prompts {
     public ArrayList<String> getGenreNames() {
 
         ArrayList<String> fileNames = new ArrayList<>();
-        for (File genre : getPromptGenres()) {
+        for (File genre : getGenres()) {
 
             String unparsedFilePath = genre.toString();
             String name;
@@ -66,6 +66,8 @@ public class Prompts {
             int nameStart = unparsedFilePath.lastIndexOf('\\');
 
             name = unparsedFilePath.substring(nameStart + 1);
+            name = name.replace(".txt", "");
+
             fileNames.add(name);
         }
 
@@ -84,12 +86,14 @@ public class Prompts {
 
         File newGenre = new File (promptsFolder, name + ".txt");
 
+
+
         try {
             if(newGenre.createNewFile()) {
                 System.out.println("Created new genre " + name);
 
                 try {
-                    BufferedWriter fileWriter = new BufferedWriter(new FileWriter(PROMPTS));
+                    BufferedWriter fileWriter = new BufferedWriter(new FileWriter(newGenre));
                     fileWriter.write("""
                             *Welcome to a prompt file! All lines that aren't a prompt must contain a * or be empty
                             *All prompts must be within 1 line and can't contain a *
@@ -101,7 +105,7 @@ public class Prompts {
                              """);
                     fileWriter.close();
                 } catch (IOException e) {
-                    System.out.println("Error writing starting line in prompt genre file?!");
+                    System.out.println("Error writing starting line in a genre file?!");
                     e.printStackTrace();
                 }
 

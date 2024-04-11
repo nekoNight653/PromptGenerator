@@ -14,29 +14,36 @@ public class GUI implements ActionListener {
 
     private final Prompts prompts = new Prompts();
 
-    private static final String ADD_GENRE_BUTTON_NAME = "Add genre";
+    private static final String ADD_GENRE_BUTTON_NAME = "Create genre";
     private static final String DELETE_GENRE_BUTTON_NAME = "Delete genre";
     private static final String ADD_BUTTON_NAME = "Add prompt";
     private static final String GET_BUTTON_NAME = "Get X random prompts";
     private static final String DELETE_BUTTON_NAME = "Delete prompt";
     private static final String GET_ALL_BUTTON_NAME = "Get all prompts";
+    private static final String GET_GENRES_BUTTON_NAME = "Get all genres";
     private static final String CLEAR_WINDOW_BUTTON_NAME = "Clear output";
 
     //The dimensions for all the controls such as buttons and text input areas
     //private Dimension controlsSize = new Dimension(20, 30);
 
     private JFrame frame = new JFrame();
-    //One panel specifically for the out since it has to be bigger than I want the controls
+    //One panel specifically for the output since it has to be bigger than the controls
     private JPanel controlPanel, outputPanel;
     //For what ever I want to display, such as prompt added or which prompts were got
     private StyledDocument outputStyled;
     private JScrollPane outputScrollable;
     private JTextPane output;
 
+
+    //Genre related buttons
     //The button for adding genres
     private JButton addGenreButton;
     //The button for deleting genres
     private JButton deleteGenreButton;
+    //The button for getting all genres
+    private JButton getGenresButton;
+
+    //Prompt related buttons
     //The button for adding prompts
     private JButton addButton;
     //The button for deleting prompts
@@ -176,6 +183,14 @@ public class GUI implements ActionListener {
         gbc.gridy = ++y;
         controlPanel.add(getAllButton, gbc);
 
+        getGenresButton = new JButton(GET_GENRES_BUTTON_NAME);
+        getGenresButton.addActionListener(this);
+        getGenresButton.setFont(controlFont);
+        buttonFuncts.put(GET_GENRES_BUTTON_NAME, this::outputAllGenres);
+        gbc.gridx = 0;
+        gbc.gridy = ++y;
+        controlPanel.add(getGenresButton, gbc);
+
         clearWindowButton = new JButton(CLEAR_WINDOW_BUTTON_NAME);
         clearWindowButton.addActionListener(this);
         clearWindowButton.setFont(controlFont);
@@ -247,11 +262,13 @@ public class GUI implements ActionListener {
 
     }
 
+    //Genre related button functions
+
     //Creates a genre.txt file (Uses the input in the text field genreToAdd)
     //unless the name is blank, or the file already exists, or there was an unforeseen error
     //In which case it tells you what the problem was
     private void addGenre() {
-        String genreName = genreToAdd.getText();
+        String genreName = genreToAdd.getText().replace(' ', '_');
 
         if(genreName.isBlank()) {
             addOutputText("Genre name blank", styleRed);
@@ -260,7 +277,7 @@ public class GUI implements ActionListener {
 
         int addGenreReturn = prompts.createNewGenre(genreName);
         if(addGenreReturn == 1) {
-            addOutputText("Genre \"" + genreName + "\" added", styleDarkOrange);
+            addOutputText("Genre \"" + genreName + "\" created", styleDarkOrange);
         } else if (addGenreReturn == 0) {
             addOutputText("Genre \"" + genreName + "\" already exists", styleRed);
         } else {
@@ -271,13 +288,31 @@ public class GUI implements ActionListener {
     //Deletes a genre (Uses the input in the textField genreToAdd)
     //Or if a problem occurred it will say "couldn't delete genre file "name of requested genre to delete" "
     private void deleteGenre() {
-        String genreName = genreToDelete.getText();
+        String genreName = genreToDelete.getText().replace(' ', '_');
 
         if(prompts.deleteGenre(genreName)) addOutputText("Genre \"" + genreName + "\" deleted", styleDarkOrange);
 
         else addOutputText("Failed to delete genre file \"" + genreName + "\"", styleRed);
     }
 
+    //Outputs all genre file names
+    private void outputAllGenres() {
+        ArrayList<String> allNames = prompts.getGenreNames();
+        allNames.sort(Comparator.reverseOrder());
+        //This makes it so that there's a number counting how many genres there are.
+        //I'm not sure it's required since there's probably not going to be too many of them but...
+        int genreNum = allNames.size() + 1;
+
+        //The addOutputText("", null); just prints a blank line because a new line is built in to the method
+        addOutputText("", null);
+        for(String name : allNames) {
+            addOutputText( (--genreNum) + ": " + name, null);
+        }
+        addOutputText("", null);
+    }
+
+
+    //Prompt related buttons
 
     //Writes a prompt to the prompt file
     //Then outputs dark orange text telling the user what prompt they wrote
