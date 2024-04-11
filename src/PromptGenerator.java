@@ -39,15 +39,7 @@ public class PromptGenerator {
 
     For example
 
-    Themes: 1: Fantasy
-    Themes: 2: Sci-Fi
-    Themes: 3: Romance
-
-    Characters: 1: Sonic
-    Characters: 2: Mario
-    Characters: 3: Link
-
-    Or this?
+    This is better
     “Genre”
     “Prompt num: Prompt”
 
