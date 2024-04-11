@@ -1,13 +1,14 @@
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 //Just a class handling all things to do with the prompts folder
 public class Prompts {
     public static final File PROMPTS = new File(System.getProperty("user.dir"), "Prompts.txt");
-
+    public static final File promptsFolder = new File(System.getProperty("user.dir"), "Prompts");
 
     //Just creates the prompts folder with some starting text explaining how it works
     private void createPromptsFile() {
@@ -40,6 +41,86 @@ public class Prompts {
         }
 
     }
+
+
+    //Returns an array list of all the files in the prompt folder
+    public ArrayList<File> getPromptGenres() {
+        ArrayList<File> genres = new ArrayList<File>();
+        if(!promptsFolder.exists()) promptsFolder.mkdir();
+
+        Collections.addAll(genres, promptsFolder.listFiles());
+        return genres;
+    }
+
+    //Maybe it's a bit premature to add this, but I'm fairly sure I'll need just the names in multiple places in the gui class
+    //All this does is loops through all the files in Prompts and gets the lastIndexOf '\' + 1
+    //Then gets that substring and adds it to an arrayList<String>
+    public ArrayList<String> getGenreNames() {
+
+        ArrayList<String> fileNames = new ArrayList<>();
+        for (File genre : getPromptGenres()) {
+
+            String unparsedFilePath = genre.toString();
+            String name;
+
+            int nameStart = unparsedFilePath.lastIndexOf('\\');
+
+            name = unparsedFilePath.substring(nameStart + 1);
+            fileNames.add(name);
+        }
+
+        return fileNames;
+    }
+
+    /*
+    * returns 1 if everything went well
+    * 0 if the file already exists
+    * -1 if an unexpected error occurred
+    *
+    * This juts creates a new txt file with the string passed in as the name
+     */
+    public int createNewGenre(String name) {
+        if(!promptsFolder.exists()) promptsFolder.mkdir();
+
+        File newGenre = new File (promptsFolder, name + ".txt");
+
+        try {
+            if(newGenre.createNewFile()) {
+                System.out.println("Created new genre " + name);
+
+                try {
+                    BufferedWriter fileWriter = new BufferedWriter(new FileWriter(PROMPTS));
+                    fileWriter.write("""
+                            *Welcome to a prompt file! All lines that aren't a prompt must contain a * or be empty
+                            *All prompts must be within 1 line and can't contain a *
+                            *Prompts can contain a-z 0-9 _-&.,'[]{}()/?!+=~"\\
+                            *I assume most other symbols work, but I haven't checked if they do. Use them at your own risk
+                            *Any line that's not empty/blank and doesn't have a * will be considered a prompt
+                            *This file must be in the same directory as the jar file, otherwise it will create a new prompts file
+                             
+                             """);
+                    fileWriter.close();
+                } catch (IOException e) {
+                    System.out.println("Error writing starting line in prompt genre file?!");
+                    e.printStackTrace();
+                }
+
+                return 1;
+
+            } else {
+                System.out.println("Genre " + name + " already exists");
+                return 0;
+            }
+
+        } catch (IOException e) {
+            System.out.println("Problem creating new genre " + name);
+            e.printStackTrace();
+            return -1;
+        }
+
+    }
+
+
     //This method reads the whole Prompts.txt file and if it has any prompts
     //it adds them to the array list then returns the array list
     //Prompts are contained within a single line and are not blankSpace and don't contain any *
@@ -92,13 +173,15 @@ public class Prompts {
         return randomPrompts;
     }
 
-    //Writes a prompt to the prompt folder
-    //Prompts must be only 1 line and not blank
-    //Prompts also can't have a *, while it will write those they will never be found by any methods for getting prompts
-    //It also creates the prompt folder if it doesn't exist
-    //It returns a 1 if it went successfully
-    //A 0 if it had incorrect input
-    //And a -1 if an unexpected error occurs
+    /*
+    * Writes a prompt to the prompt folder
+    * Prompts must be only 1 line and not blank
+    * Prompts also can't have a *, while it will write those they will never be found by any methods for getting prompts
+    * It also creates the prompt folder if it doesn't exist
+    * It returns a 1 if it went successfully
+    * A 0 if it had incorrect input
+    * And a -1 if an unexpected error occurs
+     */
     public int writePrompt(String prompt) {
         //Creates the file Prompts if it doesn't exist
         if(!PROMPTS.exists())
