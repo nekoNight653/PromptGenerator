@@ -5,7 +5,6 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 
 public class GUI {
 
@@ -17,8 +16,9 @@ public class GUI {
     private static final String GET_BUTTON_NAME = "Get X random prompts";
     private static final String DELETE_BUTTON_NAME = "Delete prompt";
     private static final String GET_ALL_BUTTON_NAME = "Get all prompts";
+    private static final String CLEAR_INPUT_BUTTON_NAME = "Clear input";
     private static final String GET_GENRES_BUTTON_NAME = "Get all genres";
-    private static final String CLEAR_WINDOW_BUTTON_NAME = "Clear output";
+    private static final String CLEAR_OUTPUT_BUTTON_NAME = "Clear output";
 
     //The dimensions for all the controls such as buttons and text input areas
     //private Dimension controlsSize = new Dimension(20, 30);
@@ -48,7 +48,14 @@ public class GUI {
     * getAllButton is the button for getting all prompts
     * clearWindowButton is the button for clearing the output window
     */
-    private JButton addButton, deleteButton, getButton, getAllButton, clearWindowButton;
+    private JButton addButton, deleteButton, getButton, getAllButton;
+
+    //Misc buttons
+    /*
+    *
+    *
+    */
+    private JButton clearOutputButton, clearInputButton;
 
     /* The text fields
     * genreToAdd is the input for which genre to add
@@ -186,6 +193,13 @@ public class GUI {
         gbc.gridy = ++y;
         controlPanel.add(getAllButton, gbc);
 
+        clearInputButton = new JButton(CLEAR_INPUT_BUTTON_NAME);
+        clearInputButton.addActionListener(e -> clearInput());
+        clearInputButton.setFont(controlFont);
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        controlPanel.add(clearInputButton, gbc);
+
         getGenresButton = new JButton(GET_GENRES_BUTTON_NAME);
         getGenresButton.addActionListener(e -> outputAllGenres());
         getGenresButton.setFont(controlFont);
@@ -193,12 +207,12 @@ public class GUI {
         gbc.gridy = ++y;
         controlPanel.add(getGenresButton, gbc);
 
-        clearWindowButton = new JButton(CLEAR_WINDOW_BUTTON_NAME);
-        clearWindowButton.addActionListener(e -> output.setText(""));
-        clearWindowButton.setFont(controlFont);
+        clearOutputButton = new JButton(CLEAR_OUTPUT_BUTTON_NAME);
+        clearOutputButton.addActionListener(e -> output.setText(""));
+        clearOutputButton.setFont(controlFont);
         gbc.gridx = 1;
         gbc.gridy = y;
-        controlPanel.add(clearWindowButton, gbc);
+        controlPanel.add(clearOutputButton, gbc);
 
 
 
@@ -415,5 +429,14 @@ public class GUI {
 //        } else {
 //            addOutputText("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", styleRed);
 //        }
+    }
+    //Clears the input in all JTextFields. This was a suggestion by my "client"(family member)
+
+    private void clearInput() {
+        JTextField[] textFields = new JTextField[]{genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete};
+
+        for (JTextField field : textFields) {
+            field.setText("");
+        }
     }
 }
