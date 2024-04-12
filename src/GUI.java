@@ -326,24 +326,28 @@ public class GUI {
     //Writes a prompt to the prompt file
     //Then outputs dark orange text telling the user what prompt they wrote
     private void addPrompt() {
-        int writePromptReturn = prompts.writePrompt(promptToAdd.getText());
-        if(writePromptReturn == 0) {
-            addOutputText("Prompt either empty or contained a *", styleRed);
-            return;
-        } else if (writePromptReturn == -1) {
-            addOutputText("An unexpected IOException occurred, prompt not wrote.", styleRed);
-            return;
-        }
-        addOutputText("Added prompt: " + promptToAdd.getText(), styleDarkOrange);
+        
+//        int writePromptReturn = prompts.writePrompt(promptToAdd.getText(), /*Requested genre*/);
+//        if(writePromptReturn == 0) {
+//            addOutputText("Prompt either empty or contained a *", styleRed);
+//            return;
+//        } else if (writePromptReturn == -1) {
+//            //Since it's planned that you will choose the genre from check box I don't know how this result would be possible but
+//            addOutputText("Genre " + /*Requested genre*/ + " doesn't exist. how?", styleRed);
+//        } else if (writePromptReturn == -2) {
+//            addOutputText("An unexpected IOException occurred, prompt not wrote.", styleRed);
+//            return;
+//        }
+//        addOutputText("Added prompt: " + promptToAdd.getText(), styleDarkOrange);
     }
 
     private void deletePrompt() {
-        ArrayList<String> deletedPrompts = prompts.deletePrompt(promptToDelete.getText());
-        if (deletedPrompts.isEmpty()) {
-            addOutputText("Prompt \"" + promptToDelete.getText() + "\" not found", styleRed);
-            return;
-        }
-        addOutputText("Deleted prompt(s): " + deletedPrompts, styleDarkOrange);
+//        ArrayList<String> deletedPrompts = prompts.deletePrompt(promptToDelete.getText(), /*Requested genre*/);
+//        if (deletedPrompts.isEmpty()) {
+//            addOutputText("Prompt \"" + promptToDelete.getText() + "\" not found", styleRed);
+//            return;
+//        }
+//        addOutputText("Deleted prompt(s): " + deletedPrompts, styleDarkOrange);
     }
 
     //It goes through each genre and outputs all prompts 1 per line with a number for which one it is in that genre
@@ -368,7 +372,7 @@ public class GUI {
                 addOutputText(promptNum + ": " + prompt, null);
             }
 
-            addOutputText(genre.getName().replace(".txt", "") + ":", null);
+            addOutputText("\nGenre " + genre.getName().replace(".txt", "") + ":" + "\n", null);
         }
     }
     //The reason I have this is the outputAllPrompts method is used in two places, so I can't do this inside it.

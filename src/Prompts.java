@@ -4,40 +4,8 @@ import java.util.*;
 
 //Just a class handling all things to do with the prompts folder
 public class Prompts {
-    public static final File PROMPTS = new File(System.getProperty("user.dir"), "Prompts.txt");
     public static final File PROMPTS_FOLDER = new File(System.getProperty("user.dir"), "Prompts");
 
-    //Just creates the prompts folder with some starting text explaining how it works
-    private void createPromptsFile() {
-        try {
-
-            if(PROMPTS.createNewFile()) {
-                //I do another try catch, so I know where it erred if it does error.
-                //Part of me feels it's overkill though
-                try {
-                    BufferedWriter fileWriter = new BufferedWriter(new FileWriter(PROMPTS));
-                    fileWriter.write("""
-                            *Welcome to the prompts file! All lines that aren't a prompt must contain a *
-                            *All prompts must be within 1 line and can't contain a *
-                            *Prompts can contain a-z 0-9 _-&.,'[]{}()/?!+=~"\\
-                            *I assume most other symbols work, but I haven't checked if they do. Use them at your own risk
-                            *Any line that's not empty/blank and doesn't have a * will be considered a prompt
-                            *This file must be in the same directory as the jar file, otherwise it will create a new prompts file
-                             
-                             """);
-                    fileWriter.close();
-                } catch (IOException e) {
-                    System.out.println("Error writing starting line in prompts?!");
-                    e.printStackTrace();
-                }
-            }
-        } catch (IOException e) {
-
-            System.out.println("Error creating file for some reason");
-            e.printStackTrace();
-        }
-
-    }
 
     //Returns an array list of all the files in the prompt folder
     public ArrayList<File> getGenres() {
@@ -120,6 +88,7 @@ public class Prompts {
 
     }
 
+    //Just deletes a genre file
     public boolean deleteGenre(String genreName) {
         if(!PROMPTS_FOLDER.exists()) {
             PROMPTS_FOLDER.mkdir();
@@ -131,7 +100,11 @@ public class Prompts {
 
 
 
-    //This method returns an array list of prompts
+    /*
+    * This method returns an array list of prompts
+    * It does this by reading through the whole file and returning each line that's a valid prompt
+    * Valid prompts are any line that's not blank and doesn't contain a *
+     */
     public ArrayList<Prompt> getPrompts(File genre){
         ArrayList<Prompt> promptList = new ArrayList<Prompt>();
 
@@ -177,7 +150,9 @@ public class Prompts {
         return promptList;
     }
 
-    //This gets a select amount of prompts randomly from the list of all prompts
+    //This gets a select amount of prompts randomly from each file
+    //Which files it gets prompts from is decided by the key set of the hashmap "specifications"
+    //It then gets x prompts from that file where x is the Integer attached to that key
     public ArrayList<Prompt> getXRandomPrompts(HashMap<File, Integer> specifications) {
         ArrayList<Prompt> randomPrompts = new ArrayList<Prompt>();
         ArrayList<File> genres = new ArrayList<>(specifications.keySet());
@@ -213,21 +188,24 @@ public class Prompts {
     }
 
     /*
-    * Writes a prompt to the prompt folder
+    * Writes a prompt to a genre file
     * Prompts must be only 1 line and not blank
     * Prompts also can't have a *, while it will write those they will never be found by any methods for getting prompts
     * It also creates the prompt folder if it doesn't exist
     * It returns a 1 if it went successfully
     * A 0 if it had incorrect input
-    * And a -1 if an unexpected error occurs
+    * A -1 if the requested genre file doesn't exist
+    * And a -2 if an unexpected error occurred
      */
-    public int writePrompt(String prompt) {
+    public int writePrompt(String prompt, File genre) {
         //Creates the file Prompts if it doesn't exist
-        if(!PROMPTS.exists())
-            createPromptsFile();
+        if(!PROMPTS_FOLDER.exists()) PROMPTS_FOLDER.mkdir();
         if (prompt.contains("*") || prompt.isBlank()) return 0;
+
+        if(!genre.exists()) return -1;
+
         try {
-            FileWriter promptWriter = new FileWriter(PROMPTS, true);
+            FileWriter promptWriter = new FileWriter(genre, true);
 
             promptWriter.write("\n" + prompt);
             promptWriter.close();
@@ -236,7 +214,7 @@ public class Prompts {
         } catch (IOException e) {
             System.out.println("Error writing prompt in file for some reason");
             e.printStackTrace();
-            return -1;
+            return -2;
         }
         return 1;
     }
@@ -244,16 +222,24 @@ public class Prompts {
     //Deletes a prompt by rewriting the entire file without the prompt
     //The only way to not have to rewrite the whole things was something about byte editing
     //And yes this can delete any line even if it's not a valid prompt
-    public ArrayList<String> deletePrompt(String unwantedPrompt) {
+    public ArrayList<String> deletePrompt(String unwantedPrompt, File genre) {
         ArrayList<String> deletedPrompts = new ArrayList<String>();
+
+        if(!PROMPTS_FOLDER.exists()){
+            PROMPTS_FOLDER.mkdir();
+            return deletedPrompts;
+        }
+        if(!genre.exists()){
+            return deletedPrompts;
+        }
 
         try {
 
-            List<String> lines = Files.readAllLines(PROMPTS.toPath());
+            List<String> lines = Files.readAllLines(genre.toPath());
 
-            BufferedWriter buffWriter = new BufferedWriter(new FileWriter(PROMPTS));
+            BufferedWriter buffWriter = new BufferedWriter(new FileWriter(genre));
 
-            //Since it's a fencepost problem
+            //Since it's a fencepost problem as far as \n go
             if(!lines.get(0).equals(unwantedPrompt)) {
                 buffWriter.write(lines.get(0));
             } else {
@@ -261,7 +247,7 @@ public class Prompts {
             }
             lines.remove(0);
 
-
+            //Looping through the file to rewrite it without the specified string
             for(String line : lines) {
                 if(!line.equals(unwantedPrompt)) {
 
