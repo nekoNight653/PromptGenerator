@@ -1,7 +1,3 @@
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 public class PromptGenerator {
 
     //I really don't use my main class part of me thinks I should move the main method to the GUI class

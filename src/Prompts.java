@@ -39,11 +39,13 @@ public class Prompts {
 
     }
 
-
     //Returns an array list of all the files in the prompt folder
     public ArrayList<File> getGenres() {
         ArrayList<File> genres = new ArrayList<File>();
-        if(!PROMPTS_FOLDER.exists()) PROMPTS_FOLDER.mkdir();
+        if(!PROMPTS_FOLDER.exists()) {
+            PROMPTS_FOLDER.mkdir();
+            return genres;
+        }
 
         Collections.addAll(genres, PROMPTS_FOLDER.listFiles());
         return genres;
@@ -52,8 +54,14 @@ public class Prompts {
     //All this does is loops through all the files in Prompts and gets the name - the .txt
     //Then it adds them to the arrayList of names
     public ArrayList<String> getGenreNames() {
-
         ArrayList<String> fileNames = new ArrayList<>();
+
+        if(!PROMPTS_FOLDER.exists()) {
+            PROMPTS_FOLDER.mkdir();
+            return fileNames;
+        }
+
+
         for (File genre : getGenres()) {
             String name = genre.getName().replace(".txt", "");
             fileNames.add(name);
@@ -113,11 +121,17 @@ public class Prompts {
     }
 
     public boolean deleteGenre(String genreName) {
+        if(!PROMPTS_FOLDER.exists()) {
+            PROMPTS_FOLDER.mkdir();
+            return false;
+        }
         File genre = new File(PROMPTS_FOLDER, genreName + ".txt");
         return genre.delete();
     }
 
 
+
+    //This method returns an array list of prompts
     public ArrayList<Prompt> getPrompts(File genre){
         ArrayList<Prompt> promptList = new ArrayList<Prompt>();
 

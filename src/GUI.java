@@ -2,14 +2,12 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class GUI implements ActionListener {
+public class GUI {
 
     private final Prompts prompts = new Prompts();
 
@@ -70,12 +68,17 @@ public class GUI implements ActionListener {
      */
     private Style styleRed, styleDarkOrange;
     /*
-    * control font is size 20 and the font for all the control panel buttons
-    * outputFont font is size 15 and the font for the output panel
+    * control font is size 30 and the font for all the control panel buttons
+    * outputFont font is size 25 and the font for the output panel
+    * Other than that they're both Font.PLAIN
     */
     private Font controlFont, outputFont;
-    //Maps the name of the buttons to the function of the buttons
-    private final HashMap<String, Runnable> buttonFuncts = new HashMap<>();
+
+    /*
+    * Next up is getting the checkboxes or radio boxes to work..
+    * Or if I find a better multiple choice thing those to work
+    */
+
     public void gui() {
 
         int y = 0;
@@ -101,42 +104,43 @@ public class GUI implements ActionListener {
         gbc.fill = GridBagConstraints.BOTH;
 
         addGenreButton = new JButton(ADD_GENRE_BUTTON_NAME);
-        addGenreButton.addActionListener(this);
+        addGenreButton.addActionListener(e -> addGenre());
         addGenreButton.setFont(controlFont);
-        buttonFuncts.put(ADD_GENRE_BUTTON_NAME, this::addGenre);
         gbc.gridx = 0;
         gbc.gridy = y;
         controlPanel.add(addGenreButton, gbc);
 
         genreToAdd = new JTextField();
+        genreToAdd.addActionListener(e -> addGenre());
+        genreToAdd.setName("genreToAdd");
         genreToAdd.setFont(controlFont);
         gbc.gridx = 1;
         gbc.gridy = y;
         controlPanel.add(genreToAdd, gbc);
 
         deleteGenreButton = new JButton(DELETE_GENRE_BUTTON_NAME);
-        deleteGenreButton.addActionListener(this);
+        deleteGenreButton.addActionListener(e -> deleteGenre());
         deleteGenreButton.setFont(controlFont);
-        buttonFuncts.put(DELETE_GENRE_BUTTON_NAME, this::deleteGenre);
         gbc.gridx = 0;
         gbc.gridy = ++y;
         controlPanel.add(deleteGenreButton, gbc);
 
         genreToDelete = new JTextField();
+        genreToDelete.addActionListener(e -> deleteGenre());
         genreToDelete.setFont(controlFont);
         gbc.gridx = 1;
         gbc.gridy = y;
         controlPanel.add(genreToDelete, gbc);
 
         addButton = new JButton(ADD_BUTTON_NAME);
-        addButton.addActionListener(this);
+        addButton.addActionListener(e -> addPrompt());
         addButton.setFont(controlFont);
-        buttonFuncts.put(ADD_BUTTON_NAME, this::addPrompt);
         gbc.gridx = 0;
         gbc.gridy = ++y;
         controlPanel.add(addButton, gbc);
 
         promptToAdd = new JTextField();
+        promptToAdd.addActionListener(e -> addPrompt());
         promptToAdd.setFont(controlFont);
         gbc.gridx = 1;
         gbc.gridy = y;
@@ -145,15 +149,15 @@ public class GUI implements ActionListener {
 
 
         deleteButton = new JButton(DELETE_BUTTON_NAME);
-        deleteButton.addActionListener(this);
+        deleteButton.addActionListener(e -> deletePrompt());
         deleteButton.setFont(controlFont);
-        buttonFuncts.put(DELETE_BUTTON_NAME, this::deletePrompt);
         gbc.gridx = 0;
         gbc.gridy = ++y;
         controlPanel.add(deleteButton, gbc);
 
 
         promptToDelete = new JTextField();
+        promptToDelete.addActionListener(e -> deletePrompt());
         promptToDelete.setFont(controlFont);
         gbc.gridx = 1;
         gbc.gridy = y;
@@ -161,14 +165,14 @@ public class GUI implements ActionListener {
 
 
         getButton = new JButton(GET_BUTTON_NAME);
-        getButton.addActionListener(this);
+        getButton.addActionListener(e -> outputXPrompts());
         getButton.setFont(controlFont);
-        buttonFuncts.put(GET_BUTTON_NAME, this::outputXPrompts);
         gbc.gridx = 0;
         gbc.gridy = ++y;
         controlPanel.add(getButton, gbc);
 
         getPromptNum = new JTextField();
+        getPromptNum.addActionListener(e -> outputXPrompts());
         getPromptNum.setFont(controlFont);
         gbc.gridx = 1;
         gbc.gridy = y;
@@ -176,25 +180,22 @@ public class GUI implements ActionListener {
 
 
         getAllButton = new JButton(GET_ALL_BUTTON_NAME);
-        getAllButton.addActionListener(this);
+        getAllButton.addActionListener(e -> outputAllPromptsSpaced());
         getAllButton.setFont(controlFont);
-        buttonFuncts.put(GET_ALL_BUTTON_NAME, this::outputAllPromptsSpaced);
         gbc.gridx = 0;
         gbc.gridy = ++y;
         controlPanel.add(getAllButton, gbc);
 
         getGenresButton = new JButton(GET_GENRES_BUTTON_NAME);
-        getGenresButton.addActionListener(this);
+        getGenresButton.addActionListener(e -> outputAllGenres());
         getGenresButton.setFont(controlFont);
-        buttonFuncts.put(GET_GENRES_BUTTON_NAME, this::outputAllGenres);
         gbc.gridx = 0;
         gbc.gridy = ++y;
         controlPanel.add(getGenresButton, gbc);
 
         clearWindowButton = new JButton(CLEAR_WINDOW_BUTTON_NAME);
-        clearWindowButton.addActionListener(this);
+        clearWindowButton.addActionListener(e -> output.setText(""));
         clearWindowButton.setFont(controlFont);
-        buttonFuncts.put(CLEAR_WINDOW_BUTTON_NAME, () -> output.setText(""));
         gbc.gridx = 1;
         gbc.gridy = y;
         controlPanel.add(clearWindowButton, gbc);
@@ -231,12 +232,6 @@ public class GUI implements ActionListener {
 
         frame.add(outputPanel, BorderLayout.EAST);
         frame.add(controlPanel, BorderLayout.CENTER);
-    }
-
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        buttonFuncts.get(e.getActionCommand()).run();
     }
 
      /*
@@ -337,25 +332,23 @@ public class GUI implements ActionListener {
         addOutputText("Deleted prompt(s): " + deletedPrompts, styleDarkOrange);
     }
 
-    //Just outputs all prompts 1 per line with a number for which one it is
-    //This method is used in two places so i don't print a new line before and after it, but I heavily suggest you do that in most situations
+    //It goes through each genre and outputs all prompts 1 per line with a number for which one it is in that genre
+    //This method is used in two places, so I don't print a new line before and after it, but I heavily suggest you do that in most situations
     private void outputAllPrompts() {
 
-//        promptList.sort(Collections.reverseOrder());
-
-
-        //This is so that it prints 1 per line which makes it far more readable
         for(File genre : prompts.getGenres()) {
             int promptNum = prompts.getPrompts(genre).size() + 1;
 
             ArrayList<Prompt> promptList = prompts.getPrompts(genre);
             ArrayList<String> stringPrompts = new ArrayList<>();
 
+            //We do this, so we can actually sort the list alphabetically..
             for(Prompt prompt : promptList) {
                 stringPrompts.add(prompt.getPrompt());
             }
             stringPrompts.sort(Comparator.reverseOrder());
 
+            //This is so that it prints 1 per line which makes it far more readable
             for (String prompt : stringPrompts) {
                 promptNum--;
                 addOutputText(promptNum + ": " + prompt, null);
