@@ -1,10 +1,14 @@
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Random;
 
 public class GUI {
 
@@ -52,8 +56,8 @@ public class GUI {
 
     //Misc buttons
     /*
-    *
-    *
+    * clearOutputButton clears all text in the output textPane
+    * clearInputButton clears all user input in the JTextFields
     */
     private JButton clearOutputButton, clearInputButton;
 
@@ -66,6 +70,31 @@ public class GUI {
     */
     private JTextField genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete;
 
+    //The JComboBox for choosing which genre
+    private JComboBox genreToAddTo, genreToDeleteFrom;
+
+    //This is because I want it to update with new information everytime I open it
+    class RefreshGenre implements PopupMenuListener {
+        Runnable runnable;
+        RefreshGenre(Runnable runnable) {
+            this.runnable = runnable;
+        }
+
+        @Override
+        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+            runnable.run();
+        }
+
+        @Override
+        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+
+        }
+
+        @Override
+        public void popupMenuCanceled(PopupMenuEvent e) {
+
+        }
+    }
 
     /*
     * Dark orange is used for text that is important such as writing and deleting prompts
@@ -153,7 +182,13 @@ public class GUI {
         gbc.gridy = y;
         controlPanel.add(promptToAdd, gbc);
 
-
+        genreToAddTo = new JComboBox<>(prompts.getGenreNames().toArray());
+        genreToAddTo.addPopupMenuListener(
+                new RefreshGenre(() -> genreToAddTo.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()))));
+        genreToAddTo.setFont(controlFont);
+        gbc.gridx = 3;
+        gbc.gridy = y;
+        controlPanel.add(genreToAddTo, gbc);
 
         deleteButton = new JButton(DELETE_BUTTON_NAME);
         deleteButton.addActionListener(e -> deletePrompt());
@@ -169,6 +204,14 @@ public class GUI {
         gbc.gridx = 1;
         gbc.gridy = y;
         controlPanel.add(promptToDelete, gbc);
+
+        genreToDeleteFrom = new JComboBox<>(prompts.getGenreNames().toArray());
+        genreToDeleteFrom.addPopupMenuListener(
+                new RefreshGenre(() -> genreToDeleteFrom.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()))));
+        genreToDeleteFrom.setFont(controlFont);
+        gbc.gridx = 3;
+        gbc.gridy = y;
+        controlPanel.add(genreToDeleteFrom, gbc);
 
 
         getButton = new JButton(GET_BUTTON_NAME);
@@ -326,28 +369,31 @@ public class GUI {
     //Writes a prompt to the prompt file
     //Then outputs dark orange text telling the user what prompt they wrote
     private void addPrompt() {
-        
-//        int writePromptReturn = prompts.writePrompt(promptToAdd.getText(), /*Requested genre*/);
-//        if(writePromptReturn == 0) {
-//            addOutputText("Prompt either empty or contained a *", styleRed);
-//            return;
-//        } else if (writePromptReturn == -1) {
-//            //Since it's planned that you will choose the genre from check box I don't know how this result would be possible but
-//            addOutputText("Genre " + /*Requested genre*/ + " doesn't exist. how?", styleRed);
-//        } else if (writePromptReturn == -2) {
-//            addOutputText("An unexpected IOException occurred, prompt not wrote.", styleRed);
-//            return;
-//        }
-//        addOutputText("Added prompt: " + promptToAdd.getText(), styleDarkOrange);
+        String genreName = (String) genreToAddTo.getSelectedItem();
+        File genre = prompts.getGenreFile(genreName);
+
+        int writePromptReturn = prompts.writePrompt(promptToAdd.getText(), genre);
+        if(writePromptReturn == 0) {
+            addOutputText("Prompt either empty or contained a *", styleRed);
+            return;
+        } else if (writePromptReturn == -1) {
+            //Since it's planned that you will choose the genre from check box I don't know how this result would be possible but
+            addOutputText("Genre " + genreName + " doesn't exist. how?", styleRed);
+        } else if (writePromptReturn == -2) {
+            addOutputText("An unexpected IOException occurred, prompt not wrote.", styleRed);
+            return;
+        }
+        addOutputText("Added to \"" + genreName + "\" prompt \"" + promptToAdd.getText() + "\"", styleDarkOrange);
     }
 
     private void deletePrompt() {
-//        ArrayList<String> deletedPrompts = prompts.deletePrompt(promptToDelete.getText(), /*Requested genre*/);
-//        if (deletedPrompts.isEmpty()) {
-//            addOutputText("Prompt \"" + promptToDelete.getText() + "\" not found", styleRed);
-//            return;
-//        }
-//        addOutputText("Deleted prompt(s): " + deletedPrompts, styleDarkOrange);
+        String genreName = (String) genreToDeleteFrom.getSelectedItem();
+        ArrayList<String> deletedPrompts = prompts.deletePrompt(promptToDelete.getText(), prompts.getGenreFile(genreName));
+        if (deletedPrompts.isEmpty()) {
+            addOutputText("Prompt \"" + promptToDelete.getText() + "\" not found", styleRed);
+            return;
+        }
+        addOutputText("Deleted from \"" + genreName + "\" prompt(s): " + deletedPrompts, styleDarkOrange);
     }
 
     //It goes through each genre and outputs all prompts 1 per line with a number for which one it is in that genre
@@ -386,53 +432,58 @@ public class GUI {
     //Outputs x random prompts
     //This happens to be the biggest button function purely because of how many different problems it can have
     private void outputXPrompts() {
-//        int num;
-//        //We make sure it's actually a number
-//        try {
-//
-//            num = Integer.parseInt(getPromptNum.getText());
-//
-//        } catch (NumberFormatException formatException) {
-//
-//            //In case they put a non integer
-//            addOutputText("Tried to get prompts without giving a proper integer.", styleRed);
-//            formatException.printStackTrace();
-//            return;
-//        }
-//        //If it's greater than 0 we get prompts
-//        if(num > 0) {
-//
-//            long promptListSize = prompts.getPrompts().size();
-//            //If the number is equal to or bigger than the size of all the prompts, we just print them all,
-//            //while telling the user it's all prompts
-//            if (num >= promptListSize){
-//
-//                addOutputText("", null);
-//                outputAllPrompts();
-//                addOutputText(
-//                        "Number of prompts requested(" + num +  ") equal to or greater than number of prompts available(" + promptListSize
-//                                + "), all prompts returned:", null);
-//
-//                addOutputText("", null);
-//
-//                return;
-//            }
-//
-//            ArrayList<String> randomPromptList = prompts.getXPromptsJp(num);
-//            randomPromptList.sort(Comparator.reverseOrder());
-//
-//            addOutputText("", null);
-//
-//            //Here's where we actually print out the random prompts
-//            for(String randPrompt : randomPromptList) {
-//                addOutputText(randPrompt, null);
-//            }
-//            addOutputText("", null);
-//
-//            //Otherwise we tell the user they input a number too low
-//        } else {
-//            addOutputText("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", styleRed);
-//        }
+        int num;
+        Random random = new Random();
+        //We make sure it's actually a number
+        try {
+
+            num = Integer.parseInt(getPromptNum.getText());
+
+        } catch (NumberFormatException formatException) {
+
+            //In case they put a non integer
+            addOutputText("Tried to get prompts without giving a proper integer.", styleRed);
+            formatException.printStackTrace();
+            return;
+        }
+
+
+        //If it's greater than 0 we get prompts
+        if(num > 0) {
+
+
+
+            long promptListSize = prompts.getPrompts(prompts.getGenres()).size();
+            //If the number is equal to or bigger than the size of all the prompts, we just print them all,
+            //while telling the user it's all prompts
+            if (num >= promptListSize){
+
+                addOutputText("", null);
+                outputAllPrompts();
+                addOutputText(
+                        "Number of prompts requested(" + num +  ") equal to or greater than number of prompts available(" + promptListSize
+                                + "), all prompts returned:", null);
+
+                addOutputText("", null);
+
+                return;
+            }
+
+
+            ArrayList<Prompt> randomPromptList = prompts.getXPromptsJp(num);
+
+            addOutputText("", null);
+
+            //Here's where we actually print out the random prompts
+            for(Prompt randPrompt : randomPromptList) {
+                addOutputText(randPrompt.getPrompt(), null);
+            }
+            addOutputText("", null);
+
+            //Otherwise we tell the user they input a number too low
+        } else {
+            addOutputText("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", styleRed);
+        }
     }
     //Clears the input in all JTextFields. This was a suggestion by my "client"(family member)
 
