@@ -130,6 +130,7 @@ public class Prompts {
                         promptList.add(new Prompt(line, genre));
                     }
                 }
+                reader.close();
 
             } catch (IOException e) {
                 System.out.println("Problem reading file: " + genre);
