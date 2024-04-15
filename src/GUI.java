@@ -115,17 +115,13 @@ public class GUI {
     */
     private Font controlFont, outputFont;
 
-    /*
-    * Next up is getting the checkboxes or radio boxes to work..
-    * Or if I find a better multiple choice thing those to work
-    */
-
+    private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     public void gui() {
 
         int y = 0;
 
         GridBagConstraints gbc = new GridBagConstraints();
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
 
 
         controlFont = new Font("serif", Font.PLAIN, 30);
@@ -338,13 +334,16 @@ public class GUI {
     //unless the name is blank, or the file already exists, or there was an unforeseen error
     //In which case it tells you what the problem was
     private void addGenre() {
-        //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't but
-        String genreName = genreToAdd.getText().replace(' ', '_');
+
+        String genreName = genreToAdd.getText();
 
         if(genreName.isBlank()) {
             addOutputText("Genre name blank", styleRed);
             return;
         }
+
+        //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't but
+        genreName = genreName.replace(' ', '_');
 
         int addGenreReturn = prompts.createNewGenre(genreName);
         if(addGenreReturn == 1) {
@@ -397,8 +396,8 @@ public class GUI {
             addOutputText("Prompt either empty or contained a *", styleRed);
             return;
         } else if (writePromptReturn == -1) {
-            //Since it's planned that you will choose the genre from check box I don't know how this result would be possible but
-            addOutputText("Genre " + genreName + " doesn't exist. how?", styleRed);
+            //Since you choose the genre from a combo box I don't know how this result would be possible but...
+            addOutputText("Genre " + genreName + " doesn't exist?", styleRed);
         } else if (writePromptReturn == -2) {
             addOutputText("An unexpected IOException occurred, prompt not wrote.", styleRed);
             return;
@@ -410,10 +409,10 @@ public class GUI {
         String genreName = (String) genreToDeleteFrom.getSelectedItem();
         ArrayList<String> deletedPrompts = prompts.deletePrompt(promptToDelete.getText(), prompts.getGenreFile(genreName));
         if (deletedPrompts.isEmpty()) {
-            addOutputText("Prompt \"" + promptToDelete.getText() + "\" not found", styleRed);
+            addOutputText("Prompt \"" + promptToDelete.getText() + "\" not found in genre \"" + genreName + "\"", styleRed);
             return;
         }
-        addOutputText("Deleted from \"" + genreName + "\" prompt(s): " + deletedPrompts, styleDarkOrange);
+        addOutputText("Deleted from genre \"" + genreName + "\" prompt(s): " + deletedPrompts, styleDarkOrange);
     }
 
     //It goes through each genre and outputs all prompts 1 per line with a number for which one it is in that genre
@@ -457,14 +456,50 @@ public class GUI {
         ArrayList<File> genres = prompts.getGenres();
         ArrayList<JComponent> inputs = new ArrayList<>();
 
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        JLabel number = new JLabel("Number");
+        JLabel genreLabel = new JLabel("Genre");
+
+
+        int y = 0;
+
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        panel.add(number, gbc);
+
+        gbc.gridx = 0;
+        panel.add(genreLabel, gbc);
+
         for(File genre : genres){
-            inputs.add(new JLabel(genre.getName().replace(".txt", "")));
-            inputs.add(new JTextField("Enter prompt here"));
+
+            inputs.add(new JLabel(genre.getName().replace(".txt", "") + " number:"));
+            inputs.get(inputs.size() - 1).setFont(outputFont);
+            gbc.gridx = 0;
+            gbc.gridy = ++y;
+            panel.add(inputs.get(inputs.size() - 1 ), gbc);
+
+            inputs.add(new JTextField("num"));
+            inputs.get(inputs.size() - 1).setFont(outputFont);
+            inputs.get(inputs.size() - 1).setPreferredSize(new Dimension((int) (screenSize.width * 0.04), (int) (screenSize.height * 0.05)));
+            gbc.gridx = 1;
+            panel.add(inputs.get(inputs.size() - 1), gbc);
+
         }
 
-        int result = JOptionPane.showConfirmDialog(null, inputs.toArray(), "Random prompt specification", JOptionPane.PLAIN_MESSAGE);
+        //It's probably rare but if it gets too big this makes it scrollable
+        JScrollPane scrollPane = new JScrollPane(panel);
+
+        //You have to set the width so the scroll bar actually appears and the height so the confirmation options don't go off-screen
+        //I tried with min sizes and max sizes but those didn't work at all
+        scrollPane.setPreferredSize(new Dimension((int) (screenSize.width * 0.21), (int) (screenSize.height * 0.3)));
+
+        int result = JOptionPane.showConfirmDialog(null, scrollPane, "Random prompt specification", JOptionPane.OK_CANCEL_OPTION);
 
         HashMap<File, Integer> specifications = new HashMap<File, Integer>();
+
 
         if(result == JOptionPane.OK_OPTION) {
             File genre = Prompts.PROMPTS_FOLDER;
@@ -487,28 +522,30 @@ public class GUI {
 
                     specifications.put(genre, num);
                 } else {
-                    genre = prompts.getGenreFile(((JLabel) comp).getText());
+                    genre = prompts.getGenreFile(((JLabel) comp).getText().replace(" number:", ""));
                 }
             }
-        }
 
-        ArrayList<Prompt> randPrompts = prompts.getXPromptsJp(specifications);
 
-        addOutputText("\n", null);
-        File previousGenre = randPrompts.get(0).getOriginFile();
 
-        for(Prompt prompt : randPrompts) {
-            if(prompt.getOriginFile() != previousGenre){
-                addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":\n", null);
-                previousGenre = prompt.getOriginFile();
+            ArrayList<Prompt> randPrompts = prompts.getXPromptsJp(specifications);
+
+            addOutputText("\n", null);
+            File previousGenre = randPrompts.get(0).getOriginFile();
+
+            for(Prompt prompt : randPrompts) {
+                if(prompt.getOriginFile() != previousGenre){
+                    addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":\n", null);
+                    previousGenre = prompt.getOriginFile();
+                }
+                addOutputText(prompt.getPrompt(), null);
             }
-            addOutputText(prompt.getPrompt(), null);
-        }
-        //Since it's a fencepost problem
-        addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":\n", null);
-        //Comment
-        addOutputText("\nChosen prompts:", null);
+            //Since it's a fencepost problem
+            addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":\n", null);
+            //Comment
+            addOutputText("\nChosen prompts:", null);
 
+        }
     }
 
     //Outputs x random prompts

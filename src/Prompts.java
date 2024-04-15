@@ -67,7 +67,7 @@ public class Prompts {
                 try {
                     BufferedWriter fileWriter = new BufferedWriter(new FileWriter(newGenre));
                     fileWriter.write("""
-                            *Welcome to a prompt file! All lines that aren't a prompt must contain a * or be empty
+                            *Welcome to a genre file! All lines that aren't a prompt must contain a * or be empty
                             *All prompts must be within 1 line and can't contain a *
                             *Prompts can contain a-z 0-9 _-&.,'[]{}()/?!+=~"\\
                             *I assume most other symbols work, but I haven't checked if they do. Use them at your own risk
@@ -186,24 +186,28 @@ public class Prompts {
 
 
         for(File genre : genres) {
-            //We do this because my method takes an array list.. I really feel like there's probably a better way,
-            //but I'm in the middle of a massive change.. I'll try and make improvements afterwords
-            ArrayList<File> currentGenre = new ArrayList<>();
-            currentGenre.add(genre);
-            ArrayList<Prompt> prompts = getPrompts(currentGenre);
-            currentGenre.clear();
 
+            ArrayList<Prompt> prompts = getPrompts(genre);
 
             if(!prompts.isEmpty()) {
-                for (int i = 0; i < specifications.get(genre); i++) {
+                int i = 0;
+                while (i < specifications.get(genre) ) {
                     int index = random.nextInt(prompts.size());
-                    //Is there a better way to get a specific random key of a map.. I hope there is
+
+
                     randomPrompts.add(prompts.get(index));
                     prompts.remove(index);
+                    i++;
+
+                    //This just makes sure it doesn't try and get nonexistent prompts
                     if(prompts.isEmpty() && i < specifications.get(genre)) {
-                        randomPrompts.add(new Prompt("No more prompts", genre));
+
+                        randomPrompts.add(new Prompt("No more prompts in genre \""
+                                + genre.getName().replace(".txt", "") + "\"", genre));
+
                         break;
                     }
+
                 }
             } else {
                 randomPrompts.add(new Prompt("No prompts to be found", genre));
