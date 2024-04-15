@@ -158,26 +158,60 @@ public class Prompts {
         return promptList;
     }
 
-    //This gets x random prompts where x is the long specified
-    public ArrayList<Prompt> getXRandomPrompts(long num) {
+    /*This gets a select amount of prompts randomly from each file
+    * Which files it gets prompts from is decided by the key set of the hashmap "specifications"
+    * It then gets x prompts from that file where x is the Integer attached to that key
+    *
+    * If it runs out of prompts it adds to randomPrompts Prompt("Out of prompts", genre);
+    */
+    public ArrayList<Prompt> getXRandomPrompts(HashMap<File, Integer> specifications) {
         ArrayList<Prompt> randomPrompts = new ArrayList<Prompt>();
-        ArrayList<Prompt> allPrompts = getPrompts(getGenres());
+        ArrayList<File> genres = new ArrayList<>(specifications.keySet());
+
+
+        ArrayList<Prompt> allPrompts = getPrompts(genres);
         Random random = new Random();
 
 
-        if(num > allPrompts.size()) {
-            System.out.println("Number of prompts not sufficient for number of prompts wanted(" + num + "). Returning all prompts instead");
+        int summedNum = 0;
+        for (int i : specifications.values()) summedNum = summedNum + i;
+
+
+
+        int promptNum = allPrompts.size();
+        if(summedNum > promptNum) {
+            System.out.println("Number of prompts(" + promptNum + ") not sufficient for number of prompts wanted(" + summedNum + "). Returning all prompts instead");
             return allPrompts;
         }
 
-        for (int i = 0; i < num; i++) {
-            int index = random.nextInt(allPrompts.size());
-            randomPrompts.add(allPrompts.get(index));
-            allPrompts.remove(index);
-        }
 
+        for(File genre : genres) {
+            //We do this because my method takes an array list.. I really feel like there's probably a better way,
+            //but I'm in the middle of a massive change.. I'll try and make improvements afterwords
+            ArrayList<File> currentGenre = new ArrayList<>();
+            currentGenre.add(genre);
+            ArrayList<Prompt> prompts = getPrompts(currentGenre);
+            currentGenre.clear();
+
+
+            if(!prompts.isEmpty()) {
+                for (int i = 0; i < specifications.get(genre); i++) {
+                    int index = random.nextInt(prompts.size());
+                    //Is there a better way to get a specific random key of a map.. I hope there is
+                    randomPrompts.add(prompts.get(index));
+                    prompts.remove(index);
+                    if(prompts.isEmpty() && i < specifications.get(genre)) {
+                        randomPrompts.add(new Prompt("No more prompts", genre));
+                        break;
+                    }
+                }
+            } else {
+                randomPrompts.add(new Prompt("No prompts to be found", genre));
+            }
+        }
         return randomPrompts;
     }
+
 
     /*
     * Writes a prompt to a genre file
@@ -261,13 +295,16 @@ public class Prompts {
 
 
 
-    //I have this next method because I wanted a low chance for it to give an extra prompt of "Surprise extra prompt! 日本語で書きます"
-    //This extra prompt is to write it in japanese. I only did this because I know who is going to be using this
-    //Since it's an extra prompt you will still get all your original prompts
-    //That means you can just choose to ignore the japanese prompt if you so desire
-    //the long num is just how many prompts you get
-    public ArrayList<Prompt> getXPromptsJp(long num) {
-        ArrayList<Prompt> randPrompts = getXRandomPrompts(num);
+    /*
+    * I have this next method because I wanted a low chance for it to give an extra prompt of "Surprise extra prompt! 日本語で書きます"
+    * This extra prompt is to write it in japanese. I only did this because I know who is going to be using this
+    * Since it's an extra prompt you will still get all your original prompts
+    * That means you can just choose to ignore the japanese prompt if you so desire
+    * the HashMap specifications is just how many prompts from which files.
+    * Each file has a number attached to it which is the number to get from that file
+    */
+    public ArrayList<Prompt> getXPromptsJp(HashMap<File, Integer> specifications) {
+        ArrayList<Prompt> randPrompts = getXRandomPrompts(specifications);
         Random random = new Random();
 
         if(random.nextInt(30) == 0) {

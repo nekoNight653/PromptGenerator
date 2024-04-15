@@ -17,12 +17,14 @@ public class GUI {
     private static final String ADD_GENRE_BUTTON_NAME = "Create genre";
     private static final String DELETE_GENRE_BUTTON_NAME = "Delete genre";
     private static final String ADD_BUTTON_NAME = "Add prompt";
-    private static final String GET_BUTTON_NAME = "Get X random prompts";
+    private static final String GET_BUTTON_NAME = "Truly random prompts";
     private static final String DELETE_BUTTON_NAME = "Delete prompt";
     private static final String GET_ALL_BUTTON_NAME = "Get all prompts";
+    private static final String PARAMED_RAND_PRMPT_BTTN_NAME = "Get random prompts";
     private static final String CLEAR_INPUT_BUTTON_NAME = "Clear input";
     private static final String GET_GENRES_BUTTON_NAME = "Get all genres";
     private static final String CLEAR_OUTPUT_BUTTON_NAME = "Clear output";
+    private static final String UNKOWN_BUTTON_NAME = "????";
 
     //The dimensions for all the controls such as buttons and text input areas
     //private Dimension controlsSize = new Dimension(20, 30);
@@ -50,16 +52,19 @@ public class GUI {
     * deleteButton is the button for deleting prompts
     * getButton is the button for getting prompts X random prompts where X is inputted by the user
     * getAllButton is the button for getting all prompts
-    * clearWindowButton is the button for clearing the output window
+    * paramedRandPrmptBttn or parameterizedRandomPromptButton (way too long a name) gets random prompts,
+    *   but you can specify how many from each genre
+    *
     */
-    private JButton addButton, deleteButton, getButton, getAllButton;
+    private JButton addButton, deleteButton, getButton, getAllButton, paramedRandPrmptBttn;
 
     //Misc buttons
     /*
     * clearOutputButton clears all text in the output textPane
     * clearInputButton clears all user input in the JTextFields
+    * unknownButton who knows?
     */
-    private JButton clearOutputButton, clearInputButton;
+    private JButton clearOutputButton, clearInputButton, unknownButton;
 
     /* The text fields
     * genreToAdd is the input for which genre to add
@@ -73,7 +78,7 @@ public class GUI {
     //The JComboBox for choosing which genre
     private JComboBox genreToAddTo, genreToDeleteFrom;
 
-    //This is because I want it to update with new information everytime I open it
+    //This is because I want my JComboBoxes to update with new information everytime I open them
     class RefreshGenre implements PopupMenuListener {
         Runnable runnable;
         RefreshGenre(Runnable runnable) {
@@ -128,13 +133,13 @@ public class GUI {
 
         controlPanel = new JPanel();
         controlPanel.setBorder(BorderFactory.createEmptyBorder());
-        controlPanel.setPreferredSize(new Dimension((int) (screenSize.width*0.7), screenSize.height));
+        controlPanel.setPreferredSize(new Dimension((int) (screenSize.width*0.6), screenSize.height));
         controlPanel.setLayout(new GridBagLayout());
 
 
         outputPanel = new JPanel();
         outputPanel.setBorder(BorderFactory.createEmptyBorder());
-        outputPanel.setPreferredSize(new Dimension((int) (screenSize.width*0.3), screenSize.height));
+        outputPanel.setPreferredSize(new Dimension((int) (screenSize.width*0.4), screenSize.height));
         outputPanel.setLayout(new GridLayout());
 
         gbc.fill = GridBagConstraints.BOTH;
@@ -228,6 +233,19 @@ public class GUI {
         gbc.gridy = y;
         controlPanel.add(getPromptNum, gbc);
 
+        paramedRandPrmptBttn = new JButton(PARAMED_RAND_PRMPT_BTTN_NAME);
+        paramedRandPrmptBttn.addActionListener(e -> getParameterizedRandPrompts());
+        paramedRandPrmptBttn.setFont(controlFont);
+        gbc.gridx = 0;
+        gbc.gridy = ++y;
+        controlPanel.add(paramedRandPrmptBttn, gbc);
+
+        unknownButton = new JButton(UNKOWN_BUTTON_NAME);
+        unknownButton.addActionListener(e -> unknowable());
+        unknownButton.setFont(controlFont);
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        controlPanel.add(unknownButton, gbc);
 
         getAllButton = new JButton(GET_ALL_BUTTON_NAME);
         getAllButton.addActionListener(e -> outputAllPromptsSpaced());
@@ -320,6 +338,7 @@ public class GUI {
     //unless the name is blank, or the file already exists, or there was an unforeseen error
     //In which case it tells you what the problem was
     private void addGenre() {
+        //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't but
         String genreName = genreToAdd.getText().replace(' ', '_');
 
         if(genreName.isBlank()) {
@@ -340,6 +359,7 @@ public class GUI {
     //Deletes a genre (Uses the input in the textField genreToAdd)
     //Or if a problem occurred it will say "couldn't delete genre file "name of requested genre to delete" "
     private void deleteGenre() {
+        //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't but
         String genreName = genreToDelete.getText().replace(' ', '_');
 
         if(prompts.deleteGenre(genreName)) addOutputText("Genre \"" + genreName + "\" deleted", styleDarkOrange);
@@ -429,11 +449,73 @@ public class GUI {
         addOutputText("", null);
     }
 
+
+    //Opens a JOptionsPane so the user can specify how many prompts they want from each genre
+    //Then just calls GetXPromptsJP with the hashMap<File, Integer> specifications
+    //Then outputs the gotten prompts
+    private void getParameterizedRandPrompts() {
+        ArrayList<File> genres = prompts.getGenres();
+        ArrayList<JComponent> inputs = new ArrayList<>();
+
+        for(File genre : genres){
+            inputs.add(new JLabel(genre.getName().replace(".txt", "")));
+            inputs.add(new JTextField("Enter prompt here"));
+        }
+
+        int result = JOptionPane.showConfirmDialog(null, inputs.toArray(), "Random prompt specification", JOptionPane.PLAIN_MESSAGE);
+
+        HashMap<File, Integer> specifications = new HashMap<File, Integer>();
+
+        if(result == JOptionPane.OK_OPTION) {
+            File genre = Prompts.PROMPTS_FOLDER;
+
+            //This is what gets the information from the JOptionPane
+            for(JComponent comp : inputs) {
+
+                if(comp instanceof JTextField) {
+                    int num;
+                    //So that it doesn't break if they accidentally put in 1 wrong input
+                    try {
+                        //I do this because I once accidentally put a space, and they're hard to see.
+                        String input = ((JTextField) comp).getText().replace(" ", "");
+                        num = Integer.parseInt(input);
+
+                    } catch (NumberFormatException e) {
+                        //If the input is invalid we set it to 0, so we get no prompts from said file
+                        num = 0;
+                    }
+
+                    specifications.put(genre, num);
+                } else {
+                    genre = prompts.getGenreFile(((JLabel) comp).getText());
+                }
+            }
+        }
+
+        ArrayList<Prompt> randPrompts = prompts.getXPromptsJp(specifications);
+
+        addOutputText("\n", null);
+        File previousGenre = randPrompts.get(0).getOriginFile();
+
+        for(Prompt prompt : randPrompts) {
+            if(prompt.getOriginFile() != previousGenre){
+                addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":\n", null);
+                previousGenre = prompt.getOriginFile();
+            }
+            addOutputText(prompt.getPrompt(), null);
+        }
+        //Since it's a fencepost problem
+        addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":\n", null);
+        //Comment
+        addOutputText("\nChosen prompts:", null);
+
+    }
+
     //Outputs x random prompts
-    //This happens to be the biggest button function purely because of how many different problems it can have
+    //x is just the input in the textField getPromptsNum
     private void outputXPrompts() {
         int num;
-        Random random = new Random();
+        final Random random = new Random();
         //We make sure it's actually a number
         try {
 
@@ -442,7 +524,7 @@ public class GUI {
         } catch (NumberFormatException formatException) {
 
             //In case they put a non integer
-            addOutputText("Tried to get prompts without giving a proper integer.", styleRed);
+            addOutputText("Tried to get prompts without giving a proper integer. Or you went over the int size limit of 2,147,483,647", styleRed);
             formatException.printStackTrace();
             return;
         }
@@ -452,46 +534,68 @@ public class GUI {
         if(num > 0) {
 
 
+            final HashMap<File, Integer> specfications = new HashMap<>();
+            final ArrayList<File> genres = prompts.getGenres();
 
-            long promptListSize = prompts.getPrompts(prompts.getGenres()).size();
-            //If the number is equal to or bigger than the size of all the prompts, we just print them all,
-            //while telling the user it's all prompts
-            if (num >= promptListSize){
+            while(num > 0) {
 
-                addOutputText("", null);
-                outputAllPrompts();
-                addOutputText(
-                        "Number of prompts requested(" + num +  ") equal to or greater than number of prompts available(" + promptListSize
-                                + "), all prompts returned:", null);
+                int nextGenre = random.nextInt(genres.size());
+                File genre = genres.get(nextGenre);
 
-                addOutputText("", null);
 
-                return;
+                if(specfications.containsKey(genre)) {
+                    specfications.put(genre, (specfications.get(genre) + 1));
+                } else {
+                    specfications.put(genre, 1);
+                }
+
+                num--;
             }
 
+            ArrayList<Prompt> randomPromptList = prompts.getXPromptsJp(specfications);
 
-            ArrayList<Prompt> randomPromptList = prompts.getXPromptsJp(num);
+            addOutputText("\n", null);
 
-            addOutputText("", null);
-
+            File lastFile = randomPromptList.get(0).getOriginFile();
             //Here's where we actually print out the random prompts
             for(Prompt randPrompt : randomPromptList) {
-                addOutputText(randPrompt.getPrompt(), null);
+                if(randPrompt.getOriginFile() != lastFile) {
+                    addOutputText("", null);
+                    lastFile = randPrompt.getOriginFile();
+                }
+                addOutputText(randPrompt.getOriginFile().getName().replace(".txt", "") + ": " + randPrompt.getPrompt(), null);
             }
-            addOutputText("", null);
+            addOutputText("\nSelected prompts:\n", null);
 
             //Otherwise we tell the user they input a number too low
         } else {
             addOutputText("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", styleRed);
         }
     }
-    //Clears the input in all JTextFields. This was a suggestion by my "client"(family member)
 
+    //Clears the input in all JTextFields
     private void clearInput() {
-        JTextField[] textFields = new JTextField[]{genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete};
+        //I would put this outside so that it could be used in two places, but it gave me a null field when I did that
+        final JTextField[] textFields = new JTextField[]{genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete};
 
         for (JTextField field : textFields) {
             field.setText("");
+        }
+    }
+
+
+    //IDK I had a gap in my GUI, so I just decided to make this
+    private void unknowable() {
+        Random random = new Random();
+        //I would put this outside so that it could be used in two places, but it gave me a null field when I did that
+        final JTextField[] textFields = new JTextField[]{genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete};
+        for(JTextField field : textFields) {
+            field.setText("????");
+        }
+        int i = random.nextInt(100, 200);
+        while (i > 0) {
+            addOutputText("?????", styleRed);
+            i--;
         }
     }
 }
