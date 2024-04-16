@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -122,7 +123,8 @@ public class Prompts {
         }
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(genre));
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(genre), StandardCharsets.UTF_8);
+            BufferedReader reader = new BufferedReader(isr);
             String line;
             try {
                 while ((line = reader.readLine()) != null) {
