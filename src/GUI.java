@@ -420,6 +420,7 @@ public class GUI {
     private void outputAllPrompts() {
 
         for(File genre : prompts.getGenres()) {
+            //We add 1 so that the final number it outputs is 1 and not 0
             int promptNum = prompts.getPrompts(genre).size() + 1;
 
             ArrayList<Prompt> promptList = prompts.getPrompts(genre);
@@ -434,10 +435,10 @@ public class GUI {
             //This is so that it prints 1 per line which makes it far more readable
             for (String prompt : stringPrompts) {
                 promptNum--;
-                addOutputText(promptNum + ": " + prompt, null);
+                addOutputText("   " + promptNum + ": " + prompt, null);
             }
 
-            addOutputText("\nGenre " + genre.getName().replace(".txt", "") + ":" + "\n", null);
+            addOutputText("\nGenre " + genre.getName().replace(".txt", "") + ":", null);
         }
     }
     //The reason I have this is the outputAllPrompts method is used in two places, so I can't do this inside it.
@@ -448,6 +449,32 @@ public class GUI {
         addOutputText("", null);
     }
 
+
+    //Contains all the code for how the rand-prompt selectors output their prompts
+    private void outputPrompts(ArrayList<Prompt> promptList) {
+
+        addOutputText("\n", null);
+        //This is so that we can track if we've changed genre file or not that way we can separate prompts by genre
+        File previousGenre = promptList.get(0).getOriginFile();
+
+        for(Prompt prompt : promptList) {
+            //This is where we output the previous genre and then set the new genre so that you know which genre the prompts are from
+            //We output on change because it always outputs at the top, so we have to do it in "reverse"
+            if(prompt.getOriginFile() != previousGenre){
+
+                addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":", null);
+                previousGenre = prompt.getOriginFile();
+
+            }
+            //The padding is, so it looks like a tab but an actual tab was too big
+            addOutputText("   " + prompt.getPrompt(), null);
+        }
+
+        //Since it's on change we usually ouput the genre we also have to do it at the end, so it's not missing one
+        addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":", null);
+
+        addOutputText("\nChosen prompts:", null);
+    }
 
     //Opens a JOptionsPane so the user can specify how many prompts they want from each genre
     //Then just calls GetXPromptsJP with the hashMap<File, Integer> specifications
@@ -466,25 +493,29 @@ public class GUI {
 
         int y = 0;
 
-        gbc.gridx = 1;
+        gbc.gridx = 2;
         gbc.gridy = y;
         panel.add(number, gbc);
 
         gbc.gridx = 0;
         panel.add(genreLabel, gbc);
 
+        String colonWithSep = ":      ";
+
         for(File genre : genres){
 
-            inputs.add(new JLabel(genre.getName().replace(".txt", "") + " number:"));
+            //The end has 6 spaces because I wanted there to be a separation...
+            //It's hacky but it works
+            inputs.add(new JLabel(genre.getName().replace(".txt", "") + colonWithSep));
             inputs.get(inputs.size() - 1).setFont(outputFont);
             gbc.gridx = 0;
             gbc.gridy = ++y;
             panel.add(inputs.get(inputs.size() - 1 ), gbc);
 
-            inputs.add(new JTextField("num"));
+            inputs.add(new JTextField());
             inputs.get(inputs.size() - 1).setFont(outputFont);
             inputs.get(inputs.size() - 1).setPreferredSize(new Dimension((int) (screenSize.width * 0.04), (int) (screenSize.height * 0.05)));
-            gbc.gridx = 1;
+            gbc.gridx = 2;
             panel.add(inputs.get(inputs.size() - 1), gbc);
 
         }
@@ -522,28 +553,14 @@ public class GUI {
 
                     specifications.put(genre, num);
                 } else {
-                    genre = prompts.getGenreFile(((JLabel) comp).getText().replace(" number:", ""));
+                    genre = prompts.getGenreFile(((JLabel) comp).getText().replace(colonWithSep, ""));
                 }
             }
 
 
 
             ArrayList<Prompt> randPrompts = prompts.getXPromptsJp(specifications);
-
-            addOutputText("\n", null);
-            File previousGenre = randPrompts.get(0).getOriginFile();
-
-            for(Prompt prompt : randPrompts) {
-                if(prompt.getOriginFile() != previousGenre){
-                    addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":\n", null);
-                    previousGenre = prompt.getOriginFile();
-                }
-                addOutputText(prompt.getPrompt(), null);
-            }
-            //Since it's a fencepost problem
-            addOutputText("\n" + previousGenre.getName().replace(".txt", "") + ":\n", null);
-            //Comment
-            addOutputText("\nChosen prompts:", null);
+            outputPrompts(randPrompts);
 
         }
     }
@@ -590,19 +607,7 @@ public class GUI {
             }
 
             ArrayList<Prompt> randomPromptList = prompts.getXPromptsJp(specfications);
-
-            addOutputText("\n", null);
-
-            File lastFile = randomPromptList.get(0).getOriginFile();
-            //Here's where we actually print out the random prompts
-            for(Prompt randPrompt : randomPromptList) {
-                if(randPrompt.getOriginFile() != lastFile) {
-                    addOutputText("", null);
-                    lastFile = randPrompt.getOriginFile();
-                }
-                addOutputText(randPrompt.getOriginFile().getName().replace(".txt", "") + ": " + randPrompt.getPrompt(), null);
-            }
-            addOutputText("\nSelected prompts:\n", null);
+            outputPrompts(randomPromptList);
 
             //Otherwise we tell the user they input a number too low
         } else {
