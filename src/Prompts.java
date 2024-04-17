@@ -123,6 +123,8 @@ public class Prompts {
         }
 
         try {
+            //We use an InputStreamReader with StandardCharsets.UTF_8 so that reading Japanese (and potentially other special symbols)
+            //actually works. Note this error didn't occur while I was in the IDE only outside of it after I built the program so be careful
             InputStreamReader isr = new InputStreamReader(new FileInputStream(genre), StandardCharsets.UTF_8);
             BufferedReader reader = new BufferedReader(isr);
             String line;
@@ -238,7 +240,10 @@ public class Prompts {
         if(!genre.exists()) return -1;
 
         try {
-            FileWriter promptWriter = new FileWriter(genre, true);
+            //We use an OutputStreamWriter with StandardCharsets.UTF_8 so that writing Japanese (and potentially other special symbols)
+            //actually works. Note this error didn't occur while I was in the IDE only outside of it after I built the program so be careful
+            OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(genre, true), StandardCharsets.UTF_8);
+            BufferedWriter promptWriter = new BufferedWriter(osw);
 
             promptWriter.write("\n" + prompt);
             promptWriter.close();
@@ -270,7 +275,10 @@ public class Prompts {
 
             List<String> lines = Files.readAllLines(genre.toPath());
 
-            BufferedWriter buffWriter = new BufferedWriter(new FileWriter(genre));
+            //We use an OutputStreamWriter with StandardCharsets.UTF_8 so that writing Japanese (and potentially other special symbols)
+            //actually works. Note this error didn't occur while I was in the IDE only outside of it after I built the program so be careful
+            OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(genre), StandardCharsets.UTF_8);
+            BufferedWriter buffWriter = new BufferedWriter(osw);
 
             //Since it's a fencepost problem as far as \n go
             if(!lines.get(0).equals(unwantedPrompt)) {
