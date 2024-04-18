@@ -170,24 +170,11 @@ public class Prompts {
     * If it runs out of prompts it adds to randomPrompts Prompt("Out of prompts", genre);
     */
     public ArrayList<Prompt> getXRandomPrompts(HashMap<File, Integer> specifications) {
+
         ArrayList<Prompt> randomPrompts = new ArrayList<Prompt>();
         ArrayList<File> genres = new ArrayList<>(specifications.keySet());
 
-
-        ArrayList<Prompt> allPrompts = getPrompts(genres);
         Random random = new Random();
-
-
-        int summedNum = 0;
-        for (int i : specifications.values()) summedNum = summedNum + i;
-
-
-
-        int promptNum = allPrompts.size();
-        if(summedNum > promptNum) {
-            System.out.println("Number of prompts(" + promptNum + ") not sufficient for number of prompts wanted(" + summedNum + "). Returning all prompts instead");
-            return allPrompts;
-        }
 
 
         for(File genre : genres) {

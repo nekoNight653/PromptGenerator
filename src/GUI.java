@@ -216,14 +216,14 @@ public class GUI {
 
 
         getButton = new JButton(GET_BUTTON_NAME);
-        getButton.addActionListener(e -> outputXPrompts());
+        getButton.addActionListener(e -> getRandPrompts());
         getButton.setFont(controlFont);
         gbc.gridx = 0;
         gbc.gridy = ++y;
         controlPanel.add(getButton, gbc);
 
         getPromptNum = new JTextField();
-        getPromptNum.addActionListener(e -> outputXPrompts());
+        getPromptNum.addActionListener(e -> getRandPrompts());
         getPromptNum.setFont(controlFont);
         gbc.gridx = 1;
         gbc.gridy = y;
@@ -567,7 +567,7 @@ public class GUI {
 
     //Outputs x random prompts
     //x is just the input in the textField getPromptsNum
-    private void outputXPrompts() {
+    private void getRandPrompts() {
         int num;
         final Random random = new Random();
         //We make sure it's actually a number
@@ -587,26 +587,59 @@ public class GUI {
         //If it's greater than 0 we get prompts
         if(num > 0) {
 
+            ArrayList<Prompt> allPrompts = prompts.getPrompts(prompts.getGenres());
+            if(num >= allPrompts.size()) {
+                addOutputText("", null);
+                outputAllPrompts();
+                addOutputText(
+                        "\nNumber of prompts requested(" + num + ") greater than or equal to number of prompts available(" + allPrompts.size() + ").\n" +
+                        "Outputting all prompts instead.", styleRed
+                );
 
-            final HashMap<File, Integer> specfications = new HashMap<>();
+                return;
+            }
+
+
+            final HashMap<File, Integer> specifications = new HashMap<>();
             final ArrayList<File> genres = prompts.getGenres();
 
+
+            //We do this because in the while loop below we test for how many prompts are in a genre,
+            // but we had to do that by looping through a genre file each time the while loop ran,
+            // so I decided to loop through them all first.
+
+            //Though I guess if they have 50 genre files and request two prompts this is inefficient... maybe I shouldn't do this?
+            //Maybe I test for the difference.. IDK it's probably not that big a deal
+            ArrayList<Integer> genreSizes = new ArrayList<Integer>();
+            for(File genre : genres) {
+                genreSizes.add(prompts.getPrompts(genre).size());
+            }
+
+            //Here is where we actually get the random prompts
             while(num > 0) {
 
                 int nextGenre = random.nextInt(genres.size());
                 File genre = genres.get(nextGenre);
 
 
-                if(specfications.containsKey(genre)) {
-                    specfications.put(genre, (specfications.get(genre) + 1));
+                if(specifications.containsKey(genre)) {
+                    specifications.put(genre, (specifications.get(genre) + 1));
                 } else {
-                    specfications.put(genre, 1);
+                    specifications.put(genre, 1);
+                }
+
+                //This just makes sure we don't go over the genres amount of available prompts
+                //So that we actually get the number of prompts requested.
+                //This doesn't break because we test if the prompts requested are >= to the number of prompts available above
+                if(specifications.get(genre) >= genreSizes.get(nextGenre)) {
+                    genres.remove(nextGenre);
+                    genreSizes.remove(nextGenre);
                 }
 
                 num--;
             }
 
-            ArrayList<Prompt> randomPromptList = prompts.getXPromptsJp(specfications);
+            ArrayList<Prompt> randomPromptList = prompts.getXPromptsJp(specifications);
             outputPrompts(randomPromptList);
 
             //Otherwise we tell the user they input a number too low
