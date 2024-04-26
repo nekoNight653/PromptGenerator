@@ -1,7 +1,5 @@
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.io.File;
@@ -12,7 +10,7 @@ import java.util.Random;
 
 public class GUI {
 
-    private final Prompts prompts = new Prompts();
+    private final TextPrompts textPrompts = new TextPrompts();
 
     private static final String ADD_GENRE_BUTTON_NAME = "Create genre";
     private static final String DELETE_GENRE_BUTTON_NAME = "Delete genre";
@@ -30,8 +28,15 @@ public class GUI {
     //private Dimension controlsSize = new Dimension(20, 30);
 
     private JFrame frame = new JFrame();
-    //One panel specifically for the output since it has to be bigger than the controls
-    private JPanel controlPanel, outputPanel;
+
+    /*
+    * textPromptsPnl contains all the input methods for dealing with text prompts and a little bit extra
+    * imagePromptsPnl contains all the input methods for dealing with image prompts
+    * controlPnl contains the textPromptsPnl and imagePromptsPnl
+    */
+    private JPanel textPromptsPnl, imagePromptsPnl, controlPnl, outputPanel;
+    //The labels just identify where the text panel and image panel start
+    private JLabel textPrmptLbl, imagePrmptLbl;
     //For what ever I want to display, such as prompt added or which prompts were got
     private StyledDocument outputStyled;
     private JScrollPane outputScrollable;
@@ -73,33 +78,10 @@ public class GUI {
     * getPromptNum is the number of how many random prompts you want to get
     * promptToDelete is the specifier for which prompt you want to delete
     */
-    private JTextField genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete;
+    private JTextField genreToAdd, promptToAdd, getPromptNum, promptToDelete;
 
     //The JComboBox for choosing which genre
-    private JComboBox genreToAddTo, genreToDeleteFrom;
-
-    //This is because I want my JComboBoxes to update with new information everytime I open them
-    class RefreshGenre implements PopupMenuListener {
-        Runnable runnable;
-        RefreshGenre(Runnable runnable) {
-            this.runnable = runnable;
-        }
-
-        @Override
-        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-            runnable.run();
-        }
-
-        @Override
-        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-
-        }
-
-        @Override
-        public void popupMenuCanceled(PopupMenuEvent e) {
-
-        }
-    }
+    private JComboBox genreToDelete, genreToAddTo, genreToDeleteFrom;
 
     /*
     * Dark orange is used for text that is important such as writing and deleting prompts
@@ -113,7 +95,7 @@ public class GUI {
     * outputFont font is size 25 and the font for the output panel
     * Other than that they're both Font.PLAIN
     */
-    private Font controlFont, outputFont;
+    private Font inputFont, outputFont;
 
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     public void gui() {
@@ -124,14 +106,36 @@ public class GUI {
 
 
 
-        controlFont = new Font("serif", Font.PLAIN, 30);
+        inputFont = new Font("serif", Font.PLAIN, 30);
         outputFont = new Font("serif", Font.PLAIN, 25);
 
-        controlPanel = new JPanel();
-        controlPanel.setBorder(BorderFactory.createEmptyBorder());
-        controlPanel.setPreferredSize(new Dimension((int) (screenSize.width*0.6), screenSize.height));
-        controlPanel.setLayout(new GridBagLayout());
+        controlPnl = new JPanel();
+        controlPnl.setBorder(BorderFactory.createEmptyBorder());
+        controlPnl.setPreferredSize(new Dimension((int) (screenSize.width*0.6), screenSize.height));
+        controlPnl.setLayout(new BoxLayout(controlPnl, BoxLayout.Y_AXIS));
 
+
+        textPrmptLbl = new JLabel("Text prompts");
+        textPrmptLbl.setFont(inputFont);
+        controlPnl.add(textPrmptLbl);
+
+        textPromptsPnl = new JPanel();
+        textPromptsPnl.setBorder(BorderFactory.createEmptyBorder());
+        //This is only to set the preferred height (I just set the preferred width to the preferred width of the controlPnl)
+        textPromptsPnl.setPreferredSize(new Dimension((int) (screenSize.width*0.6), (int) (screenSize.height * 0.3)));
+        textPromptsPnl.setLayout(new GridBagLayout());
+        controlPnl.add(textPromptsPnl);
+
+        imagePrmptLbl = new JLabel("Image prompts");
+        imagePrmptLbl.setFont(inputFont);
+        controlPnl.add(imagePrmptLbl);
+
+        imagePromptsPnl = new JPanel();
+        imagePromptsPnl.setBorder(BorderFactory.createEmptyBorder());
+        //This is only to set the preferred height (I just set the preferred width to the preferred width of the controlPnl)
+        imagePromptsPnl.setPreferredSize(new Dimension((int) (screenSize.width*0.6), (int) (screenSize.height *0.3)));
+        imagePromptsPnl.setLayout(new GridBagLayout());
+        controlPnl.add(imagePromptsPnl);
 
         outputPanel = new JPanel();
         outputPanel.setBorder(BorderFactory.createEmptyBorder());
@@ -142,134 +146,130 @@ public class GUI {
 
         addGenreButton = new JButton(ADD_GENRE_BUTTON_NAME);
         addGenreButton.addActionListener(e -> addGenre());
-        addGenreButton.setFont(controlFont);
+        addGenreButton.setFont(inputFont);
         gbc.gridx = 0;
         gbc.gridy = y;
-        controlPanel.add(addGenreButton, gbc);
+        textPromptsPnl.add(addGenreButton, gbc);
 
         genreToAdd = new JTextField();
         genreToAdd.addActionListener(e -> addGenre());
         genreToAdd.setName("genreToAdd");
-        genreToAdd.setFont(controlFont);
+        genreToAdd.setFont(inputFont);
         gbc.gridx = 1;
         gbc.gridy = y;
-        controlPanel.add(genreToAdd, gbc);
+        textPromptsPnl.add(genreToAdd, gbc);
 
         deleteGenreButton = new JButton(DELETE_GENRE_BUTTON_NAME);
         deleteGenreButton.addActionListener(e -> deleteGenre());
-        deleteGenreButton.setFont(controlFont);
+        deleteGenreButton.setFont(inputFont);
         gbc.gridx = 0;
         gbc.gridy = ++y;
-        controlPanel.add(deleteGenreButton, gbc);
+        textPromptsPnl.add(deleteGenreButton, gbc);
 
-        genreToDelete = new JTextField();
-        genreToDelete.addActionListener(e -> deleteGenre());
-        genreToDelete.setFont(controlFont);
+        genreToDelete = new JComboBox<>(textPrompts.getGenreNames().toArray());
+//        genreToDelete.addActionListener(e -> deleteGenre());
+        genreToDelete.setFont(inputFont);
         gbc.gridx = 1;
         gbc.gridy = y;
-        controlPanel.add(genreToDelete, gbc);
+        textPromptsPnl.add(genreToDelete, gbc);
 
         addButton = new JButton(ADD_BUTTON_NAME);
         addButton.addActionListener(e -> addPrompt());
-        addButton.setFont(controlFont);
+        addButton.setFont(inputFont);
         gbc.gridx = 0;
         gbc.gridy = ++y;
-        controlPanel.add(addButton, gbc);
+        textPromptsPnl.add(addButton, gbc);
 
         promptToAdd = new JTextField();
         promptToAdd.addActionListener(e -> addPrompt());
-        promptToAdd.setFont(controlFont);
+        promptToAdd.setFont(inputFont);
         gbc.gridx = 1;
         gbc.gridy = y;
-        controlPanel.add(promptToAdd, gbc);
+        textPromptsPnl.add(promptToAdd, gbc);
 
-        genreToAddTo = new JComboBox<>(prompts.getGenreNames().toArray());
-        genreToAddTo.addPopupMenuListener(
-                new RefreshGenre(() -> genreToAddTo.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()))));
-        genreToAddTo.setFont(controlFont);
+        genreToAddTo = new JComboBox<>(textPrompts.getGenreNames().toArray());
+        genreToAddTo.setFont(inputFont);
         gbc.gridx = 3;
         gbc.gridy = y;
-        controlPanel.add(genreToAddTo, gbc);
+        textPromptsPnl.add(genreToAddTo, gbc);
 
         deleteButton = new JButton(DELETE_BUTTON_NAME);
         deleteButton.addActionListener(e -> deletePrompt());
-        deleteButton.setFont(controlFont);
+        deleteButton.setFont(inputFont);
         gbc.gridx = 0;
         gbc.gridy = ++y;
-        controlPanel.add(deleteButton, gbc);
+        textPromptsPnl.add(deleteButton, gbc);
 
 
         promptToDelete = new JTextField();
         promptToDelete.addActionListener(e -> deletePrompt());
-        promptToDelete.setFont(controlFont);
+        promptToDelete.setFont(inputFont);
         gbc.gridx = 1;
         gbc.gridy = y;
-        controlPanel.add(promptToDelete, gbc);
+        textPromptsPnl.add(promptToDelete, gbc);
 
-        genreToDeleteFrom = new JComboBox<>(prompts.getGenreNames().toArray());
-        genreToDeleteFrom.addPopupMenuListener(
-                new RefreshGenre(() -> genreToDeleteFrom.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()))));
-        genreToDeleteFrom.setFont(controlFont);
+        genreToDeleteFrom = new JComboBox<>(textPrompts.getGenreNames().toArray());
+        genreToDeleteFrom.setFont(inputFont);
         gbc.gridx = 3;
         gbc.gridy = y;
-        controlPanel.add(genreToDeleteFrom, gbc);
+        textPromptsPnl.add(genreToDeleteFrom, gbc);
 
 
         getButton = new JButton(GET_BUTTON_NAME);
         getButton.addActionListener(e -> getRandPrompts());
-        getButton.setFont(controlFont);
+        getButton.setFont(inputFont);
         gbc.gridx = 0;
         gbc.gridy = ++y;
-        controlPanel.add(getButton, gbc);
+        textPromptsPnl.add(getButton, gbc);
 
         getPromptNum = new JTextField();
         getPromptNum.addActionListener(e -> getRandPrompts());
-        getPromptNum.setFont(controlFont);
+        getPromptNum.setFont(inputFont);
         gbc.gridx = 1;
         gbc.gridy = y;
-        controlPanel.add(getPromptNum, gbc);
+        textPromptsPnl.add(getPromptNum, gbc);
 
         paramedRandPrmptBttn = new JButton(PARAMED_RAND_PRMPT_BTTN_NAME);
         paramedRandPrmptBttn.addActionListener(e -> getParameterizedRandPrompts());
-        paramedRandPrmptBttn.setFont(controlFont);
+        paramedRandPrmptBttn.setFont(inputFont);
         gbc.gridx = 0;
         gbc.gridy = ++y;
-        controlPanel.add(paramedRandPrmptBttn, gbc);
+        textPromptsPnl.add(paramedRandPrmptBttn, gbc);
 
         unknownButton = new JButton(UNKOWN_BUTTON_NAME);
         unknownButton.addActionListener(e -> unknowable());
-        unknownButton.setFont(controlFont);
+        unknownButton.setFont(inputFont);
         gbc.gridx = 1;
         gbc.gridy = y;
-        controlPanel.add(unknownButton, gbc);
+        textPromptsPnl.add(unknownButton, gbc);
 
         getAllButton = new JButton(GET_ALL_BUTTON_NAME);
         getAllButton.addActionListener(e -> outputAllPromptsSpaced());
-        getAllButton.setFont(controlFont);
+        getAllButton.setFont(inputFont);
         gbc.gridx = 0;
         gbc.gridy = ++y;
-        controlPanel.add(getAllButton, gbc);
+        textPromptsPnl.add(getAllButton, gbc);
 
         clearInputButton = new JButton(CLEAR_INPUT_BUTTON_NAME);
         clearInputButton.addActionListener(e -> clearInput());
-        clearInputButton.setFont(controlFont);
+        clearInputButton.setFont(inputFont);
         gbc.gridx = 1;
         gbc.gridy = y;
-        controlPanel.add(clearInputButton, gbc);
+        textPromptsPnl.add(clearInputButton, gbc);
 
         getGenresButton = new JButton(GET_GENRES_BUTTON_NAME);
         getGenresButton.addActionListener(e -> outputAllGenres());
-        getGenresButton.setFont(controlFont);
+        getGenresButton.setFont(inputFont);
         gbc.gridx = 0;
         gbc.gridy = ++y;
-        controlPanel.add(getGenresButton, gbc);
+        textPromptsPnl.add(getGenresButton, gbc);
 
         clearOutputButton = new JButton(CLEAR_OUTPUT_BUTTON_NAME);
         clearOutputButton.addActionListener(e -> output.setText(""));
-        clearOutputButton.setFont(controlFont);
+        clearOutputButton.setFont(inputFont);
         gbc.gridx = 1;
         gbc.gridy = y;
-        controlPanel.add(clearOutputButton, gbc);
+        textPromptsPnl.add(clearOutputButton, gbc);
 
 
 
@@ -302,7 +302,7 @@ public class GUI {
         frame.setVisible(true);
 
         frame.add(outputPanel, BorderLayout.EAST);
-        frame.add(controlPanel, BorderLayout.CENTER);
+        frame.add(controlPnl, BorderLayout.CENTER);
     }
 
      /*
@@ -328,6 +328,19 @@ public class GUI {
 
     }
 
+
+    /*
+    * This is just a method to call whenever we change what genres there are
+    * It just refreshes the combo boxes that use Genres, so they display the correct information
+    */
+    private void updateGenreCmboBxes() {
+
+        genreToDelete.setModel(new DefaultComboBoxModel(textPrompts.getGenreNames().toArray()));
+        genreToAddTo.setModel(new DefaultComboBoxModel(textPrompts.getGenreNames().toArray()));
+        genreToDeleteFrom.setModel(new DefaultComboBoxModel(textPrompts.getGenreNames().toArray()));
+
+    }
+
     //Genre related button functions
 
     //Creates a genre.txt file (Uses the input in the text field genreToAdd)
@@ -345,7 +358,7 @@ public class GUI {
         //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't but
         genreName = genreName.replace(' ', '_');
 
-        int addGenreReturn = prompts.createNewGenre(genreName);
+        int addGenreReturn = textPrompts.createNewGenre(genreName);
         if(addGenreReturn == 1) {
             addOutputText("Genre \"" + genreName + "\" created", styleDarkOrange);
         } else if (addGenreReturn == 0) {
@@ -353,25 +366,29 @@ public class GUI {
         } else {
             addOutputText("Problem adding genre \"" + genreName + "\"", styleRed);
         }
+
+        updateGenreCmboBxes();
     }
 
     //Deletes a genre (Uses the input in the textField genreToAdd)
     //Or if a problem occurred it will say "couldn't delete genre file "name of requested genre to delete" "
     private void deleteGenre() {
-        //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't but
-        String genreName = genreToDelete.getText().replace(' ', '_');
+        //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't dictate user genre-names but...
+        String genreName = ((String) genreToDelete.getSelectedItem()).replace(' ', '_');
 
-        if(prompts.deleteGenre(genreName)) addOutputText("Genre \"" + genreName + "\" deleted", styleDarkOrange);
+        if(textPrompts.deleteGenre(genreName)) addOutputText("Genre \"" + genreName + "\" deleted", styleDarkOrange);
 
         else addOutputText("Failed to delete genre file \"" + genreName + "\"", styleRed);
+
+        updateGenreCmboBxes();
     }
 
     //Outputs all genre file names
     private void outputAllGenres() {
-        ArrayList<String> allNames = prompts.getGenreNames();
+        ArrayList<String> allNames = textPrompts.getGenreNames();
         allNames.sort(Comparator.reverseOrder());
-        //This makes it so that there's a number counting how many genres there are.
-        //I'm not sure it's required since there's probably not going to be too many of them but...
+
+        //This makes it so that there's a number counting down how many genres there are.
         int genreNum = allNames.size() + 1;
 
         //The addOutputText("", null); just prints a blank line because a new line is built in to the method
@@ -389,9 +406,9 @@ public class GUI {
     //Then outputs dark orange text telling the user what prompt they wrote
     private void addPrompt() {
         String genreName = (String) genreToAddTo.getSelectedItem();
-        File genre = prompts.getGenreFile(genreName);
+        File genre = textPrompts.getGenreFile(genreName);
 
-        int writePromptReturn = prompts.writePrompt(promptToAdd.getText(), genre);
+        int writePromptReturn = textPrompts.writePrompt(promptToAdd.getText(), genre);
         if(writePromptReturn == 0) {
             addOutputText("Prompt either empty or contained a *", styleRed);
             return;
@@ -407,7 +424,7 @@ public class GUI {
 
     private void deletePrompt() {
         String genreName = (String) genreToDeleteFrom.getSelectedItem();
-        ArrayList<String> deletedPrompts = prompts.deletePrompt(promptToDelete.getText(), prompts.getGenreFile(genreName));
+        ArrayList<String> deletedPrompts = textPrompts.deletePrompt(promptToDelete.getText(), textPrompts.getGenreFile(genreName));
         if (deletedPrompts.isEmpty()) {
             addOutputText("Prompt \"" + promptToDelete.getText() + "\" not found in genre \"" + genreName + "\"", styleRed);
             return;
@@ -419,11 +436,11 @@ public class GUI {
     //This method is used in two places, so I don't print a new line before and after it, but I heavily suggest you do that in most situations
     private void outputAllPrompts() {
 
-        for(File genre : prompts.getGenres()) {
+        for(File genre : textPrompts.getGenres()) {
             //We add 1 so that the final number it outputs is 1 and not 0
-            int promptNum = prompts.getPrompts(genre).size() + 1;
+            int promptNum = textPrompts.getPrompts(genre).size() + 1;
 
-            ArrayList<Prompt> promptList = prompts.getPrompts(genre);
+            ArrayList<Prompt> promptList = textPrompts.getPrompts(genre);
             ArrayList<String> stringPrompts = new ArrayList<>();
 
             //We do this, so we can actually sort the list alphabetically..
@@ -480,7 +497,7 @@ public class GUI {
     //Then just calls GetXPromptsJP with the hashMap<File, Integer> specifications
     //Then outputs the gotten prompts
     private void getParameterizedRandPrompts() {
-        ArrayList<File> genres = prompts.getGenres();
+        ArrayList<File> genres = textPrompts.getGenres();
         ArrayList<JComponent> inputs = new ArrayList<>();
 
         JPanel panel = new JPanel();
@@ -533,7 +550,7 @@ public class GUI {
 
 
         if(result == JOptionPane.OK_OPTION) {
-            File genre = Prompts.PROMPTS_FOLDER;
+            File genre = TextPrompts.PROMPTS_FOLDER;
 
             //This is what gets the information from the JOptionPane
             for(JComponent comp : inputs) {
@@ -553,13 +570,13 @@ public class GUI {
 
                     specifications.put(genre, num);
                 } else {
-                    genre = prompts.getGenreFile(((JLabel) comp).getText().replace(colonWithSep, ""));
+                    genre = textPrompts.getGenreFile(((JLabel) comp).getText().replace(colonWithSep, ""));
                 }
             }
 
 
 
-            ArrayList<Prompt> randPrompts = prompts.getXPromptsJp(specifications);
+            ArrayList<Prompt> randPrompts = textPrompts.getXPromptsJp(specifications);
             outputPrompts(randPrompts);
 
         }
@@ -587,7 +604,7 @@ public class GUI {
         //If it's greater than 0 we get prompts
         if(num > 0) {
 
-            ArrayList<Prompt> allPrompts = prompts.getPrompts(prompts.getGenres());
+            ArrayList<Prompt> allPrompts = textPrompts.getPrompts(textPrompts.getGenres());
             if(num >= allPrompts.size()) {
                 addOutputText("", null);
                 outputAllPrompts();
@@ -601,7 +618,7 @@ public class GUI {
 
 
             final HashMap<File, Integer> specifications = new HashMap<>();
-            final ArrayList<File> genres = prompts.getGenres();
+            final ArrayList<File> genres = textPrompts.getGenres();
 
 
             //We do this because in the while loop below we test for how many prompts are in a genre,
@@ -612,7 +629,7 @@ public class GUI {
             //Maybe I test for the difference.. IDK it's probably not that big a deal
             ArrayList<Integer> genreSizes = new ArrayList<Integer>();
             for(File genre : genres) {
-                genreSizes.add(prompts.getPrompts(genre).size());
+                genreSizes.add(textPrompts.getPrompts(genre).size());
             }
 
             //Here is where we actually get the random prompts
@@ -639,7 +656,7 @@ public class GUI {
                 num--;
             }
 
-            ArrayList<Prompt> randomPromptList = prompts.getXPromptsJp(specifications);
+            ArrayList<Prompt> randomPromptList = textPrompts.getXPromptsJp(specifications);
             outputPrompts(randomPromptList);
 
             //Otherwise we tell the user they input a number too low
@@ -651,7 +668,7 @@ public class GUI {
     //Clears the input in all JTextFields
     private void clearInput() {
         //I would put this outside so that it could be used in two places, but it gave me a null field when I did that
-        final JTextField[] textFields = new JTextField[]{genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete};
+        final JTextField[] textFields = new JTextField[]{genreToAdd, promptToAdd, getPromptNum, promptToDelete};
 
         for (JTextField field : textFields) {
             field.setText("");
@@ -663,7 +680,7 @@ public class GUI {
     private void unknowable() {
         Random random = new Random();
         //I would put this outside so that it could be used in two places, but it gave me a null field when I did that
-        final JTextField[] textFields = new JTextField[]{genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete};
+        final JTextField[] textFields = new JTextField[]{genreToAdd, promptToAdd, getPromptNum, promptToDelete};
         for(JTextField field : textFields) {
             field.setText("????");
         }

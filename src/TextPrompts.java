@@ -4,7 +4,7 @@ import java.nio.file.Files;
 import java.util.*;
 
 //Just a class handling all things to do with the prompts folder
-public class Prompts {
+public class TextPrompts {
     public static final File PROMPTS_FOLDER = new File(System.getProperty("user.dir"), "Prompts");
 
 
@@ -20,7 +20,7 @@ public class Prompts {
         return genres;
     }
 
-    //All this does is loops through all the files in Prompts and gets the name - the .txt
+    //All this does is loops through all the files in TextPrompts and gets the name - the .txt
     //Then it adds them to the arrayList of names
     public ArrayList<String> getGenreNames() {
         ArrayList<String> fileNames = new ArrayList<>();
@@ -152,7 +152,7 @@ public class Prompts {
 
     //This method reads each genre file in the past in array
     //it adds all prompts to the hash map with their respective file
-    //Prompts are contained within a single line and are not blankSpace and don't contain any *
+    //TextPrompts are contained within a single line and are not blankSpace and don't contain any *
     public ArrayList<Prompt> getPrompts(ArrayList<File> genres) {
         //The first is a prompt and the second is the file it's contained in
         ArrayList<Prompt> promptList = new ArrayList<Prompt>();
@@ -211,8 +211,8 @@ public class Prompts {
 
     /*
     * Writes a prompt to a genre file
-    * Prompts must be only 1 line and not blank
-    * Prompts also can't have a *, while it will write those they will never be found by any methods for getting prompts
+    * TextPrompts must be only 1 line and not blank
+    * TextPrompts also can't have a *, while it will write those they will never be found by any methods for getting prompts
     * It also creates the prompt folder if it doesn't exist
     * It returns a 1 if it went successfully
     * A 0 if it had incorrect input
@@ -220,7 +220,7 @@ public class Prompts {
     * And a -2 if an unexpected error occurred
      */
     public int writePrompt(String prompt, File genre) {
-        //Creates the file Prompts if it doesn't exist
+        //Creates the file TextPrompts if it doesn't exist
         if(!PROMPTS_FOLDER.exists()) PROMPTS_FOLDER.mkdir();
         if (prompt.contains("*") || prompt.isBlank()) return 0;
 
