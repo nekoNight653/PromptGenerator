@@ -24,9 +24,6 @@ public class GUI {
     private static final String CLEAR_OUTPUT_BUTTON_NAME = "Clear output";
     private static final String UNKOWN_BUTTON_NAME = "????";
 
-    //The dimensions for all the controls such as buttons and text input areas
-    //private Dimension controlsSize = new Dimension(20, 30);
-
     private JFrame frame = new JFrame();
 
     /*
@@ -101,46 +98,27 @@ public class GUI {
     public void gui() {
 
         int y = 0;
-
         GridBagConstraints gbc = new GridBagConstraints();
-
-
 
         inputFont = new Font("serif", Font.PLAIN, 30);
         outputFont = new Font("serif", Font.PLAIN, 25);
 
-        controlPnl = new JPanel();
-        controlPnl.setBorder(BorderFactory.createEmptyBorder());
-        controlPnl.setPreferredSize(new Dimension((int) (screenSize.width*0.6), screenSize.height));
-        controlPnl.setLayout(new BoxLayout(controlPnl, BoxLayout.Y_AXIS));
-
-
-        textPrmptLbl = new JLabel("Text prompts");
-        textPrmptLbl.setFont(inputFont);
-        controlPnl.add(textPrmptLbl);
+        outputPanel = new JPanel();
+        outputPanel.setBorder(BorderFactory.createEmptyBorder());
+        outputPanel.setPreferredSize(new Dimension((int) (screenSize.width*0.4), screenSize.height));
+        outputPanel.setLayout(new GridLayout());
 
         textPromptsPnl = new JPanel();
         textPromptsPnl.setBorder(BorderFactory.createEmptyBorder());
         //This is only to set the preferred height (I just set the preferred width to the preferred width of the controlPnl)
         textPromptsPnl.setPreferredSize(new Dimension((int) (screenSize.width*0.6), (int) (screenSize.height * 0.3)));
         textPromptsPnl.setLayout(new GridBagLayout());
-        controlPnl.add(textPromptsPnl);
-
-        imagePrmptLbl = new JLabel("Image prompts");
-        imagePrmptLbl.setFont(inputFont);
-        controlPnl.add(imagePrmptLbl);
 
         imagePromptsPnl = new JPanel();
         imagePromptsPnl.setBorder(BorderFactory.createEmptyBorder());
         //This is only to set the preferred height (I just set the preferred width to the preferred width of the controlPnl)
         imagePromptsPnl.setPreferredSize(new Dimension((int) (screenSize.width*0.6), (int) (screenSize.height *0.3)));
         imagePromptsPnl.setLayout(new GridBagLayout());
-        controlPnl.add(imagePromptsPnl);
-
-        outputPanel = new JPanel();
-        outputPanel.setBorder(BorderFactory.createEmptyBorder());
-        outputPanel.setPreferredSize(new Dimension((int) (screenSize.width*0.4), screenSize.height));
-        outputPanel.setLayout(new GridLayout());
 
         gbc.fill = GridBagConstraints.BOTH;
 
@@ -292,6 +270,23 @@ public class GUI {
         output.setEditable(false);
         output.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.gray));
         outputPanel.add(outputScrollable);
+
+        controlPnl = new JPanel();
+        controlPnl.setBorder(BorderFactory.createEmptyBorder());
+        controlPnl.setPreferredSize(new Dimension((int) (screenSize.width*0.6), screenSize.height));
+        controlPnl.setLayout(new BoxLayout(controlPnl, BoxLayout.Y_AXIS));
+
+        textPrmptLbl = new JLabel("Text prompts");
+        textPrmptLbl.setFont(inputFont);
+        controlPnl.add(textPrmptLbl);
+
+        controlPnl.add(textPromptsPnl);
+
+        imagePrmptLbl = new JLabel("Image prompts");
+        imagePrmptLbl.setFont(inputFont);
+        controlPnl.add(imagePrmptLbl);
+
+        controlPnl.add(imagePromptsPnl);
 
 
         frame.setLayout(new BorderLayout());
