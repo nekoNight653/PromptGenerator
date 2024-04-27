@@ -1,4 +1,4 @@
-"#Prompt generator"
+"#PromptGeneratorPackage.Prompts.Prompt generator"
 
 This is version 1.1 of the prompt generator
 
@@ -12,19 +12,21 @@ or you can specify which genres and how many from said genre you want!
 
 This is the branch for the upcoming version 1.2
 
-Current version 1.2.0 (Maybe technically 1.2.1 but the first version was just me syncing the code with the new branch)
+Current version 1.2.0 (Actually I just realized this doesn't even count as an early beta so why am I versioning it?)
 
-Changes: 
+Changes:
 
-    Made it so the combo boxes updated whenever the genre files were changed
+    Reverted genreToDelete to a JTextField as I found it too easy to accidentally delete a genre with potentially hundreds of prompts in it
 
-    Made a panel that has two panels one for text based prompt management and the other for image based prompt management
+    Made prompt tuple a record rather than a class
 
-    with a label above each of them
+    Created an image prompt tuple record thing
 
-    Made genreToDelete a combo box (I'm not sure it's a good change it's easier to misclick delete a genre so I might revert this)
+    Made class ImagePrompts that will be for handling the interaction with image prompts
 
-    Renamed a lot of things
+    Organized my file layout!
+
+    Seperated my TextPromptPnl and ImagePromptPnl into two different classes since they are large (Well ImagePromptPnl will be probably)
 
 Planned changes:
 

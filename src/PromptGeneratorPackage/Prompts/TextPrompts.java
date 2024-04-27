@@ -1,3 +1,5 @@
+package PromptGeneratorPackage.Prompts;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,7 +22,7 @@ public class TextPrompts {
         return genres;
     }
 
-    //All this does is loops through all the files in TextPrompts and gets the name - the .txt
+    //All this does is loops through all the files in PromptGeneratorPackage.PromptsFldr.TextPrompts and gets the name - the .txt
     //Then it adds them to the arrayList of names
     public ArrayList<String> getGenreNames() {
         ArrayList<String> fileNames = new ArrayList<>();
@@ -40,8 +42,7 @@ public class TextPrompts {
     }
 
     //This gets a file from a genre name
-    //Returns null if none are found
-    //It's tiny and I almost just put it in the GUI class since that's what needed it
+    //It's tiny and I almost just put it in the PromptGeneratorPackage.GUI.PromptGeneratorPackage.GUI class since that's what needed it
     //... but I figured it made sense here
     public File getGenreFile(String name) {
         return new File(PROMPTS_FOLDER, name + ".txt");
@@ -152,7 +153,7 @@ public class TextPrompts {
 
     //This method reads each genre file in the past in array
     //it adds all prompts to the hash map with their respective file
-    //TextPrompts are contained within a single line and are not blankSpace and don't contain any *
+    //PromptGeneratorPackage.PromptsFldr.TextPrompts are contained within a single line and are not blankSpace and don't contain any *
     public ArrayList<Prompt> getPrompts(ArrayList<File> genres) {
         //The first is a prompt and the second is the file it's contained in
         ArrayList<Prompt> promptList = new ArrayList<Prompt>();
@@ -167,7 +168,7 @@ public class TextPrompts {
     * Which files it gets prompts from is decided by the key set of the hashmap "specifications"
     * It then gets x prompts from that file where x is the Integer attached to that key
     *
-    * If it runs out of prompts it adds to randomPrompts Prompt("Out of prompts", genre);
+    * If it runs out of prompts it adds to randomPrompts PromptGeneratorPackage.PromptsFldr.Prompt("Out of prompts", genre);
     */
     public ArrayList<Prompt> getXRandomPrompts(HashMap<File, Integer> specifications) {
 
@@ -211,8 +212,8 @@ public class TextPrompts {
 
     /*
     * Writes a prompt to a genre file
-    * TextPrompts must be only 1 line and not blank
-    * TextPrompts also can't have a *, while it will write those they will never be found by any methods for getting prompts
+    * PromptGeneratorPackage.PromptsFldr.TextPrompts must be only 1 line and not blank
+    * PromptGeneratorPackage.PromptsFldr.TextPrompts also can't have a *, while it will write those they will never be found by any methods for getting prompts
     * It also creates the prompt folder if it doesn't exist
     * It returns a 1 if it went successfully
     * A 0 if it had incorrect input
@@ -220,7 +221,7 @@ public class TextPrompts {
     * And a -2 if an unexpected error occurred
      */
     public int writePrompt(String prompt, File genre) {
-        //Creates the file TextPrompts if it doesn't exist
+        //Creates the file PromptGeneratorPackage.PromptsFldr.TextPrompts if it doesn't exist
         if(!PROMPTS_FOLDER.exists()) PROMPTS_FOLDER.mkdir();
         if (prompt.contains("*") || prompt.isBlank()) return 0;
 
@@ -234,7 +235,7 @@ public class TextPrompts {
 
             promptWriter.write("\n" + prompt);
             promptWriter.close();
-            System.out.println("Prompt: <" + prompt + "> wrote");
+            System.out.println("PromptGeneratorPackage.PromptsFldr.Prompt: <" + prompt + "> wrote");
 
         } catch (IOException e) {
             System.out.println("Error writing prompt in file for some reason");
