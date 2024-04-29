@@ -5,7 +5,6 @@ import PromptGeneratorPackage.Prompts.Prompt;
 import PromptGeneratorPackage.Prompts.TextPrompts;
 
 import javax.swing.*;
-import javax.swing.text.Style;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
@@ -27,7 +26,7 @@ public class TextPromptPnl extends JPanel {
      */
     private JButton addGenreButton, deleteGenreButton, getGenresButton;
 
-    //PromptGeneratorPackage.PromptsFldr.Prompt related buttons
+    //Prompt related buttons
     /*
      * addButton is the button for adding prompts
      * deleteButton is the button for deleting prompts
@@ -274,7 +273,7 @@ public class TextPromptPnl extends JPanel {
     }
 
 
-    //PromptGeneratorPackage.PromptsFldr.Prompt related buttons
+    //Prompt related buttons
 
     //Writes a prompt to the prompt file
     //Then outputs dark orange text telling the user what prompt they wrote
@@ -284,7 +283,7 @@ public class TextPromptPnl extends JPanel {
 
         int writePromptReturn = textPrompts.writePrompt(promptToAdd.getText(), genre);
         if(writePromptReturn == 0) {
-            gui.outputln("PromptGeneratorPackage.PromptsFldr.Prompt either empty or contained a *", GUI.styleRed);
+            gui.outputln("Prompt either empty or contained a *", GUI.styleRed);
             return;
         } else if (writePromptReturn == -1) {
             //Since you choose the genre from a combo box I don't know how this result would be possible but...
@@ -300,7 +299,7 @@ public class TextPromptPnl extends JPanel {
         String genreName = (String) genreToDeleteFrom.getSelectedItem();
         ArrayList<String> deletedPrompts = textPrompts.deletePrompt(promptToDelete.getText(), textPrompts.getGenreFile(genreName));
         if (deletedPrompts.isEmpty()) {
-            gui.outputln("PromptGeneratorPackage.PromptsFldr.Prompt \"" + promptToDelete.getText() + "\" not found in genre \"" + genreName + "\"", GUI.styleRed);
+            gui.outputln("Prompt \"" + promptToDelete.getText() + "\" not found in genre \"" + genreName + "\"", GUI.styleRed);
             return;
         }
         gui.outputln("Deleted from genre \"" + genreName + "\" prompt(s): " + deletedPrompts, GUI.styleDarkOrange);
@@ -553,7 +552,7 @@ public class TextPromptPnl extends JPanel {
     }
 
 
-    //IDK I had a gap in my PromptGeneratorPackage.GUI.PromptGeneratorPackage.GUI, so I just decided to make this
+    //IDK I had a gap in my GUI, so I just decided to make this
     private void unknowable() {
         Random random = new Random();
         //I would put this outside so that it could be used in two places, but it gave me a null field when I did that

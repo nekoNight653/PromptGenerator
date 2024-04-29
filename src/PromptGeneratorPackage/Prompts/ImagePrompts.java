@@ -3,8 +3,6 @@ package PromptGeneratorPackage.Prompts;
 import PromptGeneratorPackage.PromptGenerator;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 

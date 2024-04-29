@@ -8,8 +8,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class ImagePromptPnl extends JPanel {
 
@@ -27,7 +25,7 @@ public class ImagePromptPnl extends JPanel {
 
         this.setBorder(BorderFactory.createEmptyBorder());
         //This is only to set the preferred height (I just set the preferred width to the preferred width of the controlPnl)
-        //I use constants in the class PromptGeneratorPackage.GUI for the size, so I can set the size from the PromptGeneratorPackage.GUI class (If I ever decide to resize them)
+        //I use constants in the class PromptGeneratorPackage.GUI for the size, so I can set the size from the GUI class (If I ever decide to resize them)
         this.setPreferredSize(new Dimension(GUI.INPUT_WIDTH, GUI.PRMPT_PNL_HEIGHT));
         this.setLayout(new GridBagLayout());
 
