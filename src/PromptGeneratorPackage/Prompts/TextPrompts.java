@@ -8,11 +8,12 @@ import java.nio.file.Files;
 import java.util.*;
 
 //Just a class handling all things to do with the prompts folder
-public class TextPrompts {
+public class TextPrompts implements PromptManager {
     public static final File TEXT_PROMPT_FOLDER = new File(PromptGenerator.PROMPTS_FOLDER, "Text_prompts");
 
 
     //Returns an array list of all the files in the prompt folder
+    @Override
     public ArrayList<File> getGenres() {
         ArrayList<File> genres = new ArrayList<File>();
         if(!TEXT_PROMPT_FOLDER.exists()) {
@@ -26,20 +27,19 @@ public class TextPrompts {
 
     //All this does is loops through all the files in TextPrompts and gets the name - the .txt
     //Then it adds them to the arrayList of names
+    @Override
     public ArrayList<String> getGenreNames() {
         ArrayList<String> fileNames = new ArrayList<>();
 
-        for (File genre : getGenres()) {
-            String name = genre.getName().replace(".txt", "");
-            fileNames.add(name);
+        for(String name : PromptManager.super.getGenreNames()) {
+            fileNames.add(name.replace(".txt", ""));
         }
 
         return fileNames;
     }
 
     //This gets a file from a genre name
-    //It's tiny and I almost just put it in the GUI class since that's what needed it
-    //... but I figured it made sense here
+    @Override
     public File getGenreFile(String name) {
         return new File(TEXT_PROMPT_FOLDER, name + ".txt");
     }
@@ -51,7 +51,8 @@ public class TextPrompts {
     *
     * This just creates a new txt file with the string passed in as the name
      */
-    public int createNewGenre(String name) {
+    @Override
+    public int createGenre(String name) {
         if(!TEXT_PROMPT_FOLDER.exists()) TEXT_PROMPT_FOLDER.mkdir();
 
         File newGenre = new File (TEXT_PROMPT_FOLDER, name + ".txt");
@@ -96,6 +97,7 @@ public class TextPrompts {
 
     //Just deletes a genre file
     //Takes a string without the .txt I could have made it take a file, but I don't need it like that
+    @Override
     public boolean deleteGenre(String genreName) {
         if(!TEXT_PROMPT_FOLDER.exists()) {
             TEXT_PROMPT_FOLDER.mkdir();
@@ -112,6 +114,7 @@ public class TextPrompts {
     * It does this by reading through the whole file and returning each line that's a valid prompt
     * Valid prompts are any line that's not blank and doesn't contain a *
      */
+    @Override
     public ArrayList<Prompt> getPrompts(File genre){
         ArrayList<Prompt> promptList = new ArrayList<Prompt>();
 
@@ -147,65 +150,6 @@ public class TextPrompts {
     }
 
 
-    //This method reads each genre file in the past in array
-    //it adds all prompts to the hash map with their respective file
-    //TextPrompts are contained within a single line and are not blankSpace and don't contain any *
-    public ArrayList<Prompt> getPrompts(ArrayList<File> genres) {
-        //The first is a prompt and the second is the file it's contained in
-        ArrayList<Prompt> promptList = new ArrayList<Prompt>();
-
-        for(File genre : genres) {
-            promptList.addAll(getPrompts(genre));
-        }
-        return promptList;
-    }
-
-    /*This gets a select amount of prompts randomly from each file
-    * Which files it gets prompts from is decided by the key set of the hashmap "specifications"
-    * It then gets x prompts from that file where x is the Integer attached to that key
-    *
-    * If it runs out of prompts it adds to randomPrompts Prompt("Out of prompts", genre);
-    */
-    public ArrayList<Prompt> getXRandomPrompts(HashMap<File, Integer> specifications) {
-
-        ArrayList<Prompt> randomPrompts = new ArrayList<Prompt>();
-        ArrayList<File> genres = new ArrayList<>(specifications.keySet());
-
-        Random random = new Random();
-
-
-        for(File genre : genres) {
-
-            ArrayList<Prompt> prompts = getPrompts(genre);
-
-            if(!prompts.isEmpty()) {
-                int i = 0;
-                while (i < specifications.get(genre) ) {
-                    int index = random.nextInt(prompts.size());
-
-
-                    randomPrompts.add(prompts.get(index));
-                    prompts.remove(index);
-                    i++;
-
-                    //This just makes sure it doesn't try and get nonexistent prompts
-                    if(prompts.isEmpty() && i < specifications.get(genre)) {
-
-                        randomPrompts.add(new Prompt("No more prompts in genre \""
-                                + genre.getName().replace(".txt", "") + "\"", genre));
-
-                        break;
-                    }
-
-                }
-            } else {
-                randomPrompts.add(new Prompt("No prompts to be found", genre));
-            }
-        }
-        return randomPrompts;
-    }
-
-
     /*
     * Writes a prompt to a genre file
     * TextPrompts must be only 1 line and not blank
@@ -216,7 +160,8 @@ public class TextPrompts {
     * A -1 if the requested genre file doesn't exist
     * And a -2 if an unexpected error occurred
      */
-    public int writePrompt(String prompt, File genre) {
+    @Override
+    public int addPrompt(String prompt, File genre) {
         //Creates the file TextPrompts if it doesn't exist
         if(!TEXT_PROMPT_FOLDER.exists()) TEXT_PROMPT_FOLDER.mkdir();
         if (prompt.contains("*") || prompt.isBlank()) return 0;
@@ -244,6 +189,7 @@ public class TextPrompts {
     //Deletes a prompt by rewriting the entire file without the prompt
     //The only way to not have to rewrite the whole things was something about byte editing
     //And yes this can delete any line even if it's not a valid prompt
+    @Override
     public ArrayList<String> deletePrompt(String unwantedPrompt, File genre) {
         ArrayList<String> deletedPrompts = new ArrayList<String>();
 

@@ -1,6 +1,7 @@
 package PromptGeneratorPackage;
 
 import PromptGeneratorPackage.GUI.GUI;
+import PromptGeneratorPackage.Prompts.ImagePrompts;
 
 import java.io.File;
 

@@ -16,10 +16,16 @@ Current version 1.2.0 (Not quite version 1.2.0 yet hasn't really "released" (I h
 
 Changes:
 
-    
+    Went a little wild with abstracting (pretty sure this counts as abstracting) by adding an interface for both the ImagePrompts class and the TextPrompts class
+
+    Made an abstract class for both the textPrompt and imagePrompt panels
+
+    Got a working start of the ImagePrompts class there are still things that need to be added but it kind of works
+
+    Made progress on the GUI
 
 Planned changes:
 
-    Capability to store and get random images
+    Ability to interface with the iamge prompts class from the GUI
 
-    So that it's a little better than a random number generator I'm also going to make it genre seperated for the images
+    And I might even make a way to get random prompts from both of the prompt types
