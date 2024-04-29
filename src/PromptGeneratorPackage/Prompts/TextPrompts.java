@@ -1,5 +1,7 @@
 package PromptGeneratorPackage.Prompts;
 
+import PromptGeneratorPackage.PromptGenerator;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -7,31 +9,25 @@ import java.util.*;
 
 //Just a class handling all things to do with the prompts folder
 public class TextPrompts {
-    public static final File PROMPTS_FOLDER = new File(System.getProperty("user.dir"), "Prompts");
+    public static final File TEXT_PROMPT_FOLDER = new File(PromptGenerator.PROMPTS_FOLDER, "Text_prompts");
 
 
     //Returns an array list of all the files in the prompt folder
     public ArrayList<File> getGenres() {
         ArrayList<File> genres = new ArrayList<File>();
-        if(!PROMPTS_FOLDER.exists()) {
-            PROMPTS_FOLDER.mkdir();
+        if(!TEXT_PROMPT_FOLDER.exists()) {
+            TEXT_PROMPT_FOLDER.mkdir();
             return genres;
         }
 
-        Collections.addAll(genres, PROMPTS_FOLDER.listFiles());
+        Collections.addAll(genres, TEXT_PROMPT_FOLDER.listFiles());
         return genres;
     }
 
-    //All this does is loops through all the files in PromptGeneratorPackage.PromptsFldr.TextPrompts and gets the name - the .txt
+    //All this does is loops through all the files in TextPrompts and gets the name - the .txt
     //Then it adds them to the arrayList of names
     public ArrayList<String> getGenreNames() {
         ArrayList<String> fileNames = new ArrayList<>();
-
-        if(!PROMPTS_FOLDER.exists()) {
-            PROMPTS_FOLDER.mkdir();
-            return fileNames;
-        }
-
 
         for (File genre : getGenres()) {
             String name = genre.getName().replace(".txt", "");
@@ -42,10 +38,10 @@ public class TextPrompts {
     }
 
     //This gets a file from a genre name
-    //It's tiny and I almost just put it in the PromptGeneratorPackage.GUI.PromptGeneratorPackage.GUI class since that's what needed it
+    //It's tiny and I almost just put it in the GUI class since that's what needed it
     //... but I figured it made sense here
     public File getGenreFile(String name) {
-        return new File(PROMPTS_FOLDER, name + ".txt");
+        return new File(TEXT_PROMPT_FOLDER, name + ".txt");
     }
 
     /*
@@ -56,9 +52,9 @@ public class TextPrompts {
     * This just creates a new txt file with the string passed in as the name
      */
     public int createNewGenre(String name) {
-        if(!PROMPTS_FOLDER.exists()) PROMPTS_FOLDER.mkdir();
+        if(!TEXT_PROMPT_FOLDER.exists()) TEXT_PROMPT_FOLDER.mkdir();
 
-        File newGenre = new File (PROMPTS_FOLDER, name + ".txt");
+        File newGenre = new File (TEXT_PROMPT_FOLDER, name + ".txt");
 
 
 
@@ -99,12 +95,13 @@ public class TextPrompts {
     }
 
     //Just deletes a genre file
+    //Takes a string without the .txt I could have made it take a file, but I don't need it like that
     public boolean deleteGenre(String genreName) {
-        if(!PROMPTS_FOLDER.exists()) {
-            PROMPTS_FOLDER.mkdir();
+        if(!TEXT_PROMPT_FOLDER.exists()) {
+            TEXT_PROMPT_FOLDER.mkdir();
             return false;
         }
-        File genre = new File(PROMPTS_FOLDER, genreName + ".txt");
+        File genre = new File(TEXT_PROMPT_FOLDER, genreName + ".txt");
         return genre.delete();
     }
 
@@ -118,8 +115,7 @@ public class TextPrompts {
     public ArrayList<Prompt> getPrompts(File genre){
         ArrayList<Prompt> promptList = new ArrayList<Prompt>();
 
-        if(!PROMPTS_FOLDER.exists()) {
-            PROMPTS_FOLDER.mkdir();
+        if(!genre.exists()) {
             return promptList;
         }
 
@@ -222,7 +218,7 @@ public class TextPrompts {
      */
     public int writePrompt(String prompt, File genre) {
         //Creates the file PromptGeneratorPackage.PromptsFldr.TextPrompts if it doesn't exist
-        if(!PROMPTS_FOLDER.exists()) PROMPTS_FOLDER.mkdir();
+        if(!TEXT_PROMPT_FOLDER.exists()) TEXT_PROMPT_FOLDER.mkdir();
         if (prompt.contains("*") || prompt.isBlank()) return 0;
 
         if(!genre.exists()) return -1;
@@ -251,8 +247,8 @@ public class TextPrompts {
     public ArrayList<String> deletePrompt(String unwantedPrompt, File genre) {
         ArrayList<String> deletedPrompts = new ArrayList<String>();
 
-        if(!PROMPTS_FOLDER.exists()){
-            PROMPTS_FOLDER.mkdir();
+        if(!TEXT_PROMPT_FOLDER.exists()){
+            TEXT_PROMPT_FOLDER.mkdir();
             return deletedPrompts;
         }
         if(!genre.exists()){
@@ -311,7 +307,7 @@ public class TextPrompts {
         Random random = new Random();
 
         if(random.nextInt(30) == 0) {
-            randPrompts.add(new Prompt("Surprise extra prompt! 日本語で書きます", PROMPTS_FOLDER));
+            randPrompts.add(new Prompt("Surprise extra prompt! 日本語で書きます", TEXT_PROMPT_FOLDER));
         }
         return randPrompts;
     }

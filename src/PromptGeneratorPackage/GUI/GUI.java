@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.text.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class GUI {
 
@@ -27,8 +28,18 @@ public class GUI {
     public static final Font inputFont = new Font("serif", Font.PLAIN, 30);
     public static final Font outputFont = new Font("serif", Font.PLAIN, 25);
 
+    /*
+     * Dark orange is used for text that is important such as writing and deleting prompts
+     * Since it's important to know if you accidentally wrote or deleted a prompt
+     * Red is used for errors such as bad input like putting a letter into the getPromptNum text field which wants a number
+     * And for all other cases you use null for the normal black text
+     */
+    public static Style styleRed, styleDarkOrange;
+
     //These are just the names of all my buttons
     //I don't know if I should use them anymore (I use to use them to check  which button was being clicked, but I use lambdas now)
+
+    //TextPromptPnl button names
     public static final String ADD_GENRE_BUTTON_NAME = "Create genre";
     public static final String DELETE_GENRE_BUTTON_NAME = "Delete genre";
     public static final String ADD_BUTTON_NAME = "Add prompt";
@@ -41,6 +52,10 @@ public class GUI {
     public static final String CLEAR_OUTPUT_BUTTON_NAME = "Clear output";
     public static final String UNKOWN_BUTTON_NAME = "????";
 
+    //ImagePromptsPnl button names
+
+    public static final String DISPLAY_IMAGE_BUTTON_NAME = "Display image";
+
     private final JFrame frame = new JFrame();
 
     /*
@@ -49,7 +64,6 @@ public class GUI {
     * inputPnl contains the textPromptsPnl and imagePromptsPnl
     */
     private JPanel inputPnl, outputPanel;
-    private final ImagePromptPnl imagePromptsPnl = new ImagePromptPnl();
     //The labels just identify where the text panel and image panel start
     private JLabel textPrmptLbl, imagePrmptLbl;
     //For what ever I want to display, such as prompt added or which prompts were got
@@ -57,21 +71,10 @@ public class GUI {
     private JScrollPane outputScrollable;
     private JTextPane output;
 
-    /*
-    * Dark orange is used for text that is important such as writing and deleting prompts
-    * Since it's important to know if you accidentally wrote or deleted a prompt
-    * Red is used for errors such as bad input like putting a letter into the getPromptNum text field which wants a number
-    * And for all other cases you use null for the normal black text
-     */
-    private Style styleRed, styleDarkOrange;
-
-
-
-
-
     public void gui() {
 
         TextPromptPnl textPromptsPnl = new TextPromptPnl();
+        ImagePromptPnl imagePromptsPnl = new ImagePromptPnl();
 
         /*
         * Up here we declare and modify the panels that hold all the most the components
@@ -156,6 +159,79 @@ public class GUI {
 
         } catch (BadLocationException e) {
             System.out.println("Some problem adding text to styled document");
+            e.printStackTrace();
+        }
+    }
+
+
+    /*
+    * This method takes a buffered image and displays it in the output
+    * It resizes the image if it's too big and keeps the dimensions intact
+    * Then converts it to an iconStyle? (I don't know why it's done like this but everyone seems to do it)
+    *
+    * Note after that when the gui gets a scrollbar it gets shorter by like 15px (I didn't notice it with just text,
+    *  but since the images don't retroactively scale with the gui it was very obvious)
+    */
+    public void outputImg(BufferedImage originalImage) {
+
+        //We multiply by 0.95 because it will try and increase the output panel size slowly over time if we don't
+        int maxWidth = (int) (output.getWidth() * 0.95);
+        int maxHeight = (int) (output.getHeight() * 0.95);
+
+        int imageWidth = originalImage.getWidth();
+        int imageHeight = originalImage.getHeight();
+
+
+        try {
+            // if it's smaller than the max width and height we don't need to do anything!
+            if (imageWidth < maxWidth && imageHeight < maxHeight) {
+
+                SimpleAttributeSet iconStyle = new SimpleAttributeSet();
+                StyleConstants.setIcon(iconStyle, new ImageIcon(originalImage));
+
+//                outputln("Width: " + imageWidth +" Height: " + imageHeight + " Output width: " + output.getWidth() + " Output height: " + output.getHeight(), styleRed);
+
+                outputStyled.insertString(0, "Image " + "\n", iconStyle);
+
+            // Otherwise we need to scale it appropriately
+            } else {
+                //Gets the ratio of the width to the height
+                //Example 1000 width 10 height would return 100 because the ratio is 100-Width to 1-Height
+                //Example two 10 width 1000 height would return 0.01 because the ratio is 1-Width to 100-Height
+                //
+                //You have to cast to float, or it will round it to an int since two it's just two ints in there
+                float dimensionsRatio = (float) imageWidth /imageHeight;
+
+                int newWidth;
+                int newHeight;
+
+                if(maxWidth < imageWidth) {
+
+                    int offset = imageWidth - maxWidth;
+                    newWidth = maxWidth;
+                    newHeight = (int) (imageHeight - offset / dimensionsRatio);
+                } else {
+                    int offset = imageHeight - maxHeight;
+                    newHeight = maxHeight;
+                    newWidth = (int) (imageWidth - offset * dimensionsRatio);
+                }
+
+                BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+                Graphics2D graphics2D = resizedImage.createGraphics();
+                graphics2D.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+                graphics2D.dispose();
+
+                SimpleAttributeSet iconStyle = new SimpleAttributeSet();
+                StyleConstants.setIcon(iconStyle, new ImageIcon(resizedImage));
+
+//                outputln("Width: " + newWidth +" Height: " + newHeight + " Output width: " + output.getWidth() + " Output height: " + output.getHeight(), styleRed);
+
+                outputStyled.insertString(0, "Image " + "\n", iconStyle);
+            }
+
+
+        } catch (BadLocationException e) {
+            System.out.println("Couldn't output image");
             e.printStackTrace();
         }
     }

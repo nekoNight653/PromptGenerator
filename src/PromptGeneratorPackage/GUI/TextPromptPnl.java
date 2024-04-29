@@ -16,7 +16,7 @@ import java.util.Random;
 public class TextPromptPnl extends JPanel {
 
 
-    private final GUI gui = PromptGenerator.gui;
+    private final static GUI gui = PromptGenerator.gui;
     private final TextPrompts textPrompts = new TextPrompts();
 
     //Genre related buttons
@@ -58,14 +58,6 @@ public class TextPromptPnl extends JPanel {
 
     //The JComboBox for choosing which genre
     private JComboBox genreToAddTo, genreToDeleteFrom;
-
-    /*
-     * Dark orange is used for text that is important such as writing and deleting prompts
-     * Since it's important to know if you accidentally wrote or deleted a prompt
-     * Red is used for errors such as bad input like putting a letter into the getPromptNum text field which wants a number
-     * And for all other cases you use null for the normal black text
-     */
-    private Style styleRed, styleDarkOrange;
 
 
     public TextPromptPnl() {
@@ -233,7 +225,7 @@ public class TextPromptPnl extends JPanel {
         String genreName = genreToAdd.getText();
 
         if(genreName.isBlank()) {
-            gui.outputln("Genre name blank", styleRed);
+            gui.outputln("Genre name blank", GUI.styleRed);
             return;
         }
 
@@ -242,11 +234,11 @@ public class TextPromptPnl extends JPanel {
 
         int addGenreReturn = textPrompts.createNewGenre(genreName);
         if(addGenreReturn == 1) {
-            gui.outputln("Genre \"" + genreName + "\" created", styleDarkOrange);
+            gui.outputln("Genre \"" + genreName + "\" created", GUI.styleDarkOrange);
         } else if (addGenreReturn == 0) {
-            gui.outputln("Genre \"" + genreName + "\" already exists", styleRed);
+            gui.outputln("Genre \"" + genreName + "\" already exists", GUI.styleRed);
         } else {
-            gui.outputln("Problem adding genre \"" + genreName + "\"", styleRed);
+            gui.outputln("Problem adding genre \"" + genreName + "\"", GUI.styleRed);
         }
 
         updateGenreCmboBxes();
@@ -258,9 +250,9 @@ public class TextPromptPnl extends JPanel {
         //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't dictate user genre-names but...
         String genreName = genreToDelete.getText().replace(' ', '_');
 
-        if(textPrompts.deleteGenre(genreName)) gui.outputln("Genre \"" + genreName + "\" deleted", styleDarkOrange);
+        if(textPrompts.deleteGenre(genreName)) gui.outputln("Genre \"" + genreName + "\" deleted", GUI.styleDarkOrange);
 
-        else gui.outputln("Failed to delete genre file \"" + genreName + "\"", styleRed);
+        else gui.outputln("Failed to delete genre file \"" + genreName + "\"", GUI.styleRed);
 
         updateGenreCmboBxes();
     }
@@ -292,26 +284,26 @@ public class TextPromptPnl extends JPanel {
 
         int writePromptReturn = textPrompts.writePrompt(promptToAdd.getText(), genre);
         if(writePromptReturn == 0) {
-            gui.outputln("PromptGeneratorPackage.PromptsFldr.Prompt either empty or contained a *", styleRed);
+            gui.outputln("PromptGeneratorPackage.PromptsFldr.Prompt either empty or contained a *", GUI.styleRed);
             return;
         } else if (writePromptReturn == -1) {
             //Since you choose the genre from a combo box I don't know how this result would be possible but...
-            gui.outputln("Genre " + genreName + " doesn't exist?", styleRed);
+            gui.outputln("Genre " + genreName + " doesn't exist?", GUI.styleRed);
         } else if (writePromptReturn == -2) {
-            gui.outputln("An unexpected IOException occurred, prompt not wrote.", styleRed);
+            gui.outputln("An unexpected IOException occurred, prompt not wrote.", GUI.styleRed);
             return;
         }
-        gui.outputln("Added to \"" + genreName + "\" prompt \"" + promptToAdd.getText() + "\"", styleDarkOrange);
+        gui.outputln("Added to \"" + genreName + "\" prompt \"" + promptToAdd.getText() + "\"", GUI.styleDarkOrange);
     }
 
     private void deletePrompt() {
         String genreName = (String) genreToDeleteFrom.getSelectedItem();
         ArrayList<String> deletedPrompts = textPrompts.deletePrompt(promptToDelete.getText(), textPrompts.getGenreFile(genreName));
         if (deletedPrompts.isEmpty()) {
-            gui.outputln("PromptGeneratorPackage.PromptsFldr.Prompt \"" + promptToDelete.getText() + "\" not found in genre \"" + genreName + "\"", styleRed);
+            gui.outputln("PromptGeneratorPackage.PromptsFldr.Prompt \"" + promptToDelete.getText() + "\" not found in genre \"" + genreName + "\"", GUI.styleRed);
             return;
         }
-        gui.outputln("Deleted from genre \"" + genreName + "\" prompt(s): " + deletedPrompts, styleDarkOrange);
+        gui.outputln("Deleted from genre \"" + genreName + "\" prompt(s): " + deletedPrompts, GUI.styleDarkOrange);
     }
 
     //It goes through each genre and outputs all prompts 1 per line with a number for which one it is in that genre
@@ -435,7 +427,7 @@ public class TextPromptPnl extends JPanel {
 
 
         if(result == JOptionPane.OK_OPTION) {
-            File genre = TextPrompts.PROMPTS_FOLDER;
+            File genre = TextPrompts.TEXT_PROMPT_FOLDER;
 
             //This is what gets the information from the JOptionPane
             for(JComponent comp : inputs) {
@@ -480,7 +472,7 @@ public class TextPromptPnl extends JPanel {
         } catch (NumberFormatException formatException) {
 
             //In case they put a non integer
-            gui.outputln("Tried to get prompts without giving a proper integer. Or you went over the int size limit of 2,147,483,647", styleRed);
+            gui.outputln("Tried to get prompts without giving a proper integer. Or you went over the int size limit of 2,147,483,647", GUI.styleRed);
             formatException.printStackTrace();
             return;
         }
@@ -495,7 +487,7 @@ public class TextPromptPnl extends JPanel {
                 outputAllPrompts();
                 gui.outputln(
                         "\nNumber of prompts requested(" + num + ") greater than or equal to number of prompts available(" + allPrompts.size() + ").\n" +
-                                "Outputting all prompts instead.", styleRed
+                                "Outputting all prompts instead.", GUI.styleRed
                 );
 
                 return;
@@ -546,7 +538,7 @@ public class TextPromptPnl extends JPanel {
 
             //Otherwise we tell the user they input a number too low
         } else {
-            gui.outputln("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", styleRed);
+            gui.outputln("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", GUI.styleRed);
         }
     }
 
@@ -571,7 +563,7 @@ public class TextPromptPnl extends JPanel {
         }
         int i = random.nextInt(100, 200);
         while (i > 0) {
-            gui.outputln("?????", styleRed);
+            gui.outputln("?????", GUI.styleRed);
             i--;
         }
     }

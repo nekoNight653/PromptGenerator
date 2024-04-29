@@ -1,4 +1,4 @@
-"#PromptGeneratorPackage.Prompts.Prompt generator"
+Prompt generator
 
 This is version 1.1 of the prompt generator
 
@@ -10,23 +10,13 @@ You can get random prompts either completely randomly (random genres too),
 
 or you can specify which genres and how many from said genre you want!
 
-This is the branch for the upcoming version 1.2
+This is the branch for the upcoming version 1.2 (I upload my active progress on it)
 
-Current version 1.2.0 (Actually I just realized this doesn't even count as an early beta so why am I versioning it?)
+Current version 1.2.0 (Not quite version 1.2.0 yet hasn't really "released" (I haven't handed it over to the person I'm making it for))
 
 Changes:
 
-    Reverted genreToDelete to a JTextField as I found it too easy to accidentally delete a genre with potentially hundreds of prompts in it
-
-    Made prompt tuple a record rather than a class
-
-    Created an image prompt tuple record thing
-
-    Made class ImagePrompts that will be for handling the interaction with image prompts
-
-    Organized my file layout!
-
-    Seperated my TextPromptPnl and ImagePromptPnl into two different classes since they are large (Well ImagePromptPnl will be probably)
+    
 
 Planned changes:
 
