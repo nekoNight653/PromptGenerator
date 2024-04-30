@@ -12,16 +12,12 @@ or you can specify which genres and how many from said genre you want!
 
 It has image prompts and text prompts
 
-Current version 1.2.2 (I guess it's 1.2.2 or would 1.2.1.1 be better.... no too long.)
+Current version 1.2.2
 
 Changes:
 
-    Fixed a glitch where text would increase the gui size,
+    Actually fixed a glitch where text would increase the gui size,
     and then that would consequently increase the image size limit to beyond what you could see
-
-    Slight GUI improvements
-
-    Removed a bit of unneeded code
 
 Planned changes:
 

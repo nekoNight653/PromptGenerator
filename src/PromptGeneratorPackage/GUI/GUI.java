@@ -78,9 +78,13 @@ public class GUI {
         * It just contains label("Text prompts"), textPromptsPnl, label("Image prompts")  imagePromptsPnl
         * You'll also find the frame down there
         */
+        Dimension outputDimensions = new Dimension(OUTPUT_WIDTH, screenSize.height);
+
         outputPanel = new JPanel();
         outputPanel.setBorder(BorderFactory.createEmptyBorder());
-        outputPanel.setPreferredSize(new Dimension(OUTPUT_WIDTH, screenSize.height));
+        outputPanel.setPreferredSize(outputDimensions);
+        outputPanel.setSize(outputDimensions);
+        outputPanel.setMaximumSize(outputDimensions);
         outputPanel.setLayout(new GridLayout());
 
 
@@ -173,8 +177,10 @@ public class GUI {
     public void outputImg(BufferedImage originalImage) {
 
         //We multiply by 0.95 because it will try and increase the output panel size slowly over time if we don't
-        int maxWidth = (int) (output.getWidth() * 0.95);
-        int maxHeight = (int) (output.getHeight() * 0.95);
+        //We use the OUTPUT_WIDTH and screenSize.height because those are more relevant to the size than the size of output,
+        // because output changes size those mostly don't
+        int maxWidth = (int) (OUTPUT_WIDTH * 0.95);
+        int maxHeight = (int) (screenSize.height * 0.95);
 
         int imageWidth = originalImage.getWidth();
         int imageHeight = originalImage.getHeight();
