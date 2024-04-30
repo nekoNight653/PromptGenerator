@@ -6,7 +6,7 @@ import java.io.File;
 //Note for image prompts the string is just the file path
 public class Prompt {
     private String prompt;
-    private File genre;
+    private final File genre;
 
     public Prompt(String prompt, File genre) {
         this.prompt = prompt;

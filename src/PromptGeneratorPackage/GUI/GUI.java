@@ -52,10 +52,6 @@ public class GUI {
     public static final String CLEAR_OUTPUT_BUTTON_NAME = "Clear output";
     public static final String UNKOWN_BUTTON_NAME = "????";
 
-    //ImagePromptsPnl button names
-
-    public static final String DISPLAY_IMAGE_BUTTON_NAME = "Display image";
-
     private final JFrame frame = new JFrame();
 
     /*
@@ -192,7 +188,7 @@ public class GUI {
 
 //                outputln("Width: " + imageWidth +" Height: " + imageHeight + " Output width: " + output.getWidth() + " Output height: " + output.getHeight(), styleRed);
 
-                outputStyled.insertString(0, "Image " + "\n", iconStyle);
+                outputStyled.insertString(0, "Image" + "\n", iconStyle);
 
             // Otherwise we need to scale it appropriately
             } else {

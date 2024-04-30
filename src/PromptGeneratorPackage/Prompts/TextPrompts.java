@@ -239,17 +239,17 @@ public class TextPrompts implements PromptManager {
     }
 
 
-
     /*
-    * I have this next method because I wanted a low chance for it to give an extra prompt of "Surprise extra prompt! 日本語で書きます"
-    * This extra prompt is to write it in japanese. I only did this because I know who is going to be using this
-    * Since it's an extra prompt you will still get all your original prompts
-    * That means you can just choose to ignore the japanese prompt if you so desire
-    * the HashMap specifications is just how many prompts from which files.
-    * Each file has a number attached to it which is the number to get from that file
-    */
-    public ArrayList<Prompt> getXPromptsJp(HashMap<File, Integer> specifications) {
-        ArrayList<Prompt> randPrompts = getXRandomPrompts(specifications);
+     * I override this next method because I wanted a low chance for it to give an extra prompt of "Surprise extra prompt! 日本語で書きます"
+     * This extra prompt is to write it in japanese. I only did this because I know who is going to be using this
+     * Since it's an extra prompt you will still get all your original prompts
+     * That means you can just choose to ignore the japanese prompt if you so desire
+     * the HashMap specifications is just how many prompts from which files.
+     * Each file has a number attached to it which is the number to get from that file
+     */
+    @Override
+    public ArrayList<Prompt> getXRandomPrompts(HashMap<File,  Integer> specifications) {
+        ArrayList<Prompt> randPrompts = PromptManager.super.getXRandomPrompts(specifications);
         Random random = new Random();
 
         if(random.nextInt(30) == 0) {
@@ -257,5 +257,7 @@ public class TextPrompts implements PromptManager {
         }
         return randPrompts;
     }
+
+
 
 }

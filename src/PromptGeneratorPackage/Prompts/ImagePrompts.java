@@ -58,6 +58,9 @@ public class ImagePrompts implements  PromptManager {
     public int createGenre(String name) {
         //We don't check for if PROMPTS_FOLDER exists since it should make it if it doesn't
         try {
+            //If the IMAGE_PROMPTS_FOLDER doesn't exist and we can't create it we return negative 1
+            if(!IMAGE_PROMPTS_FOLDER.exists()) if(!IMAGE_PROMPTS_FOLDER.mkdir()) return -1;
+
             if((new File(IMAGE_PROMPTS_FOLDER, name)).mkdir()) {
                 return 1;
             }
@@ -119,7 +122,7 @@ public class ImagePrompts implements  PromptManager {
         return prompts;
     }
     //This creates the prompt missing png if it doesn't exist
-    private File makePromptMissingPNG() {
+    public File makePromptMissingPNG() {
         File stuff = new File(PromptGenerator.PROMPTS_FOLDER, "stuff");
         if(!stuff.exists()) stuff.mkdir();
 
@@ -199,6 +202,9 @@ public class ImagePrompts implements  PromptManager {
     //And I think it might be fun to have some panel that randomly switched between text and image prompts in the future
 
     //This method returns a string (in an array) detailing what went wrong or right
+    //
+    //I would use a char for successFullyDeleted but .contains requires a char sequence so
+    public static final String successFullyDeleted = "!";
     @Override
     public ArrayList<String> deletePrompt(String unwantedPrompt, File genre) {
         ArrayList<String> results = new ArrayList<>();
@@ -209,10 +215,11 @@ public class ImagePrompts implements  PromptManager {
         }
         File promptToDelete = new File(genre, unwantedPrompt);
         if(promptToDelete.delete()) {
-            results.add("Prompt \"" + unwantedPrompt + "\" deleted!");
+            results.add("Prompt \"" + unwantedPrompt + "\" deleted" + successFullyDeleted);
             return results;
         }
-        results.add("Failed to delete prompt \"" + unwantedPrompt + "\"");
+        results.add("\nFailed to delete prompt \"" + unwantedPrompt + "\"" +
+                "\nDo note unlike add image prompt this method takes just the name(including the .png or .jpg etc) not the full file path\n");
         return results;
     }
 

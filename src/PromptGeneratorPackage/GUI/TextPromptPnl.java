@@ -2,6 +2,7 @@ package PromptGeneratorPackage.GUI;
 
 import PromptGeneratorPackage.PromptGenerator;
 import PromptGeneratorPackage.Prompts.Prompt;
+import PromptGeneratorPackage.Prompts.PromptManager;
 import PromptGeneratorPackage.Prompts.TextPrompts;
 
 import javax.swing.*;
@@ -12,7 +13,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Random;
 
-public class TextPromptPnl extends JPanel {
+public class TextPromptPnl extends PromptPnl {
 
 
     private static final GUI gui = PromptGenerator.gui;
@@ -60,47 +61,6 @@ public class TextPromptPnl extends JPanel {
     //The JComboBox for choosing which genre
     private final JComboBox genreToAddTo, genreToDeleteFrom;
 
-    //We have this as a constant because it gets weird when we bounce it around between methods
-    private static final GridBagConstraints GBC = new GridBagConstraints();
-
-    /*
-    * Just creates a button with an action listener and the font inputFont
-    * At the specified location
-    * Takes the button it's making, the runnable it runs on click, and the position of the button on the grid
-    */
-    private void createButton(JButton button, Runnable runnable, int x, int y) {
-        button.addActionListener(e -> runnable.run());
-        button.setFont(GUI.inputFont);
-        GBC.gridx = x;
-        GBC.gridy = y;
-        this.add(button, GBC);
-    }
-
-
-    //I just realized since both this and imagePromptsPnl will have these 3 methods below I could I guess make a parent class with these two in it
-    //But I think that's probably just more confusing.. Maybe if I start making tons of these
-
-    /*
-     * Just creates a textField with an action listener and the font inputFont
-     * At the specified location
-     * Takes the textField it's making, the runnable it runs on enter, and the position of the textField on the grid
-     */
-    private void createTextField(JTextField textField, Runnable runnable, int x, int y) {
-        textField.addActionListener(e -> runnable.run());
-        textField.setFont(GUI.inputFont);
-        GBC.gridx = x;
-        GBC.gridy = y;
-        this.add(textField, GBC);
-    }
-
-    //This is because I have a combination of a button and textField
-    //I have this because I have a fair amount of these.
-    //It will always create the button at 0x on the grid and the textField at 1x on the grid
-    //And both will have the same actionListener result
-    private void bttnTxtFldCombo(JButton button, JTextField textField, Runnable runnable, int y) {
-        createButton(button, runnable, 0, y);
-        createTextField(textField, runnable, 1, y);
-    }
 
     public TextPromptPnl() {
 
@@ -118,12 +78,12 @@ public class TextPromptPnl extends JPanel {
         addGenreButton = new JButton(GUI.ADD_GENRE_BUTTON_NAME);
         genreToAdd = new JTextField();
 
-        bttnTxtFldCombo(addGenreButton, genreToAdd, this::addGenre, y);
+        bttnTxtFldCombo(addGenreButton, genreToAdd, this::createGenre, y);
 
         deleteGenreButton = new JButton(GUI.DELETE_GENRE_BUTTON_NAME);
         genreToDelete = new JTextField();
 
-        bttnTxtFldCombo(deleteGenreButton, genreToDelete, this::deleteTxtGenre, ++y);
+        bttnTxtFldCombo(deleteGenreButton, genreToDelete, this::deleteGenre, ++y);
 
         addButton = new JButton(GUI.ADD_BUTTON_NAME);
         promptToAdd = new JTextField();
@@ -132,10 +92,7 @@ public class TextPromptPnl extends JPanel {
 
 
         genreToAddTo = new JComboBox<>(prompts.getGenreNames().toArray());
-        genreToAddTo.setFont(GUI.inputFont);
-        GBC.gridx = 3;
-        GBC.gridy = y;
-        this.add(genreToAddTo, GBC);
+        createComboBox(genreToAddTo, 3, y);
 
         deleteButton = new JButton(GUI.DELETE_BUTTON_NAME);
         promptToDelete = new JTextField();
@@ -143,10 +100,7 @@ public class TextPromptPnl extends JPanel {
         bttnTxtFldCombo(deleteButton, promptToDelete, this::deletePrompt, ++y);
 
         genreToDeleteFrom = new JComboBox<>(prompts.getGenreNames().toArray());
-        genreToDeleteFrom.setFont(GUI.inputFont);
-        GBC.gridx = 3;
-        GBC.gridy = y;
-        this.add(genreToDeleteFrom, GBC);
+        createComboBox(genreToDeleteFrom, 3, y);
 
 
         getButton = new JButton(GUI.GET_BUTTON_NAME);
@@ -174,63 +128,55 @@ public class TextPromptPnl extends JPanel {
 
 
     }
+    //Handing over some information to our resident abstract class
+    @Override
+    protected String promptType() {
+        return "Text";
+    }
 
+    @Override
+    protected PromptManager prompts() {
+        return prompts;
+    }
 
-    /*
-     * This is just a method to call whenever we change what genres there are
-     * It just refreshes the combo boxes that use Genres, so they display the correct information
-     */
-    private void updateGenreCmboBxes() {
+    @Override
+    protected String genreToAdd() {
+        return genreToAdd.getText();
+    }
+
+    @Override
+    protected String genreToDelete() {
+        return genreToDelete.getText();
+    }
+
+    @Override
+    protected int getPromptNum() {
+        int num;
+        try {
+            num = Integer.parseInt(getPromptNum.getText());
+        } catch (NumberFormatException e) {
+            num = 0;
+            e.printStackTrace();
+        }
+        return num;
+    }
+
+    @Override
+    protected JTextField[] textFields() {
+        return new JTextField[]{genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete};
+    }
+
+    @Override
+    protected void genreExistenceUpdate() {
 
         genreToAddTo.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()));
         genreToDeleteFrom.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()));
 
     }
 
-    //Genre related button functions
-
-    //Creates a genre.txt file (Uses the input in the text field genreToAdd)
-    //unless the name is blank, or the file already exists, or there was an unforeseen error
-    //In which case it tells you what the problem was
-    private void addGenre() {
-
-        String genreName = genreToAdd.getText();
-
-        if(genreName.isBlank()) {
-            gui.outputln("Genre name blank", GUI.STYLE_RED);
-            return;
-        }
-
-        //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't but
-        genreName = genreName.replace(' ', '_');
-
-        int addGenreReturn = prompts.createGenre(genreName);
-        if(addGenreReturn == 1) {
-            gui.outputln("Genre \"" + genreName + "\" created", GUI.STYLE_DARK_ORANGE);
-        } else if (addGenreReturn == 0) {
-            gui.outputln("Genre \"" + genreName + "\" already exists", GUI.STYLE_RED);
-        } else {
-            gui.outputln("Problem adding genre \"" + genreName + "\"", GUI.STYLE_RED);
-        }
-
-        updateGenreCmboBxes();
-    }
-
-    //Deletes a genre (Uses the input in the textField genreToAdd)
-    //Or if a problem occurred it will say "couldn't delete genre file "name of requested genre to delete" "
-    private void deleteTxtGenre() {
-        //I add this because spaces in file names can be weird, and they freak me out.. maybe I shouldn't dictate user genre-names but...
-        String genreName = genreToDelete.getText().replace(' ', '_');
-
-        if(prompts.deleteGenre(genreName)) gui.outputln("Genre \"" + genreName + "\" deleted", GUI.STYLE_DARK_ORANGE);
-
-        else gui.outputln("Failed to delete genre file \"" + genreName + "\"", GUI.STYLE_RED);
-
-        updateGenreCmboBxes();
-    }
-
     //Outputs all genre file names
-    private void outputAllGenres() {
+    @Override
+    protected void outputAllGenres() {
         ArrayList<String> allNames = prompts.getGenreNames();
         allNames.sort(Comparator.reverseOrder());
 
@@ -250,7 +196,8 @@ public class TextPromptPnl extends JPanel {
 
     //Writes a prompt to the prompt file
     //Then outputs dark orange text telling the user what prompt they wrote
-    private void addPrompt() {
+    @Override
+    protected void addPrompt() {
         String genreName = (String) genreToAddTo.getSelectedItem();
         File genre = prompts.getGenreFile(genreName);
 
@@ -267,8 +214,9 @@ public class TextPromptPnl extends JPanel {
         }
         gui.outputln("Added to \"" + genreName + "\" prompt \"" + promptToAdd.getText() + "\"", GUI.STYLE_DARK_ORANGE);
     }
-
-    private void deletePrompt() {
+    //Calls the delete prompt method in TextPrompts passing in the prompt to delete and the genre
+    @Override
+    protected void deletePrompt() {
         String genreName = (String) genreToDeleteFrom.getSelectedItem();
         ArrayList<String> deletedPrompts = prompts.deletePrompt(promptToDelete.getText(), prompts.getGenreFile(genreName));
         if (deletedPrompts.isEmpty()) {
@@ -280,7 +228,7 @@ public class TextPromptPnl extends JPanel {
 
     //It goes through each genre and outputs all prompts 1 per line with a number for which one it is in that genre
     //This method is used in two places, so I don't print a new line before and after it, but I heavily suggest you do that in most situations
-    private void outputAllPrompts() {
+    protected void outputAllPrompts() {
 
         for(File genre : prompts.getGenres()) {
             //We add 1 so that the final number it outputs is 1 and not 0
@@ -314,7 +262,8 @@ public class TextPromptPnl extends JPanel {
 
 
     //Contains all the code for how the rand-prompt selectors output their prompts
-    private void outputPrompts(ArrayList<Prompt> promptList) {
+    @Override
+    protected void outputPrompts(ArrayList<Prompt> promptList) {
 
         gui.outputln("\n", null);
         //This is so that we can track if we've changed genre file or not that way we can separate prompts by genre
@@ -339,198 +288,11 @@ public class TextPromptPnl extends JPanel {
         gui.outputln("\nChosen prompts:", null);
     }
 
-    //Opens a JOptionsPane so the user can specify how many prompts they want from each genre
-    //Then just calls GetXPromptsJP with the hashMap<File, Integer> specifications
-    //Then outputs the gotten prompts
-    private void getParameterizedRandPrompts() {
-
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
-        ArrayList<File> genres = prompts.getGenres();
-        ArrayList<JComponent> inputs = new ArrayList<>();
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-
-        JLabel number = new JLabel("Number");
-        JLabel genreLabel = new JLabel("Genre");
-
-
-        int y = 0;
-
-        gbc.gridx = 2;
-        gbc.gridy = y;
-        panel.add(number, gbc);
-
-        gbc.gridx = 0;
-        panel.add(genreLabel, gbc);
-
-        String colonWithSep = ":      ";
-
-        for(File genre : genres){
-
-            //The end has 6 spaces because I wanted there to be a separation...
-            //It's hacky but it works
-            inputs.add(new JLabel(genre.getName().replace(".txt", "") + colonWithSep));
-            inputs.get(inputs.size() - 1).setFont(GUI.outputFont);
-            gbc.gridx = 0;
-            gbc.gridy = ++y;
-            panel.add(inputs.get(inputs.size() - 1 ), gbc);
-
-            inputs.add(new JTextField());
-            inputs.get(inputs.size() - 1).setFont(GUI.outputFont);
-            inputs.get(inputs.size() - 1).setPreferredSize(new Dimension((int) (screenSize.width * 0.04), (int) (screenSize.height * 0.05)));
-            gbc.gridx = 2;
-            panel.add(inputs.get(inputs.size() - 1), gbc);
-
-        }
-
-        //It's probably rare but if it gets too big this makes it scrollable
-        JScrollPane scrollPane = new JScrollPane(panel);
-
-        //You have to set the width so the scroll bar actually appears and the height so the confirmation options don't go off-screen
-        //I tried with min sizes and max sizes but those didn't work at all
-        scrollPane.setPreferredSize(new Dimension((int) (screenSize.width * 0.21), (int) (screenSize.height * 0.3)));
-
-        int result = JOptionPane.showConfirmDialog(null, scrollPane, "Random prompt specification", JOptionPane.OK_CANCEL_OPTION);
-
-        HashMap<File, Integer> specifications = new HashMap<File, Integer>();
-
-
-        if(result == JOptionPane.OK_OPTION) {
-            File genre = TextPrompts.TEXT_PROMPT_FOLDER;
-
-            //This is what gets the information from the JOptionPane
-            for(JComponent comp : inputs) {
-
-                if(comp instanceof JTextField) {
-                    int num;
-                    //So that it doesn't break if they accidentally put in 1 wrong input
-                    try {
-                        //I do this because I once accidentally put a space, and they're hard to see.
-                        String input = ((JTextField) comp).getText().replace(" ", "");
-                        num = Integer.parseInt(input);
-
-                    } catch (NumberFormatException e) {
-                        //If the input is invalid we set it to 0, so we get no prompts from said file
-                        num = 0;
-                    }
-
-                    specifications.put(genre, num);
-                } else {
-                    genre = prompts.getGenreFile(((JLabel) comp).getText().replace(colonWithSep, ""));
-                }
-            }
-
-
-
-            ArrayList<Prompt> randPrompts = prompts.getXPromptsJp(specifications);
-            outputPrompts(randPrompts);
-
-        }
-    }
-
-    //Outputs x random prompts
-    //x is just the input in the textField getPromptsNum
-    private void getRandPrompts() {
-        int num;
-        final Random random = new Random();
-        //We make sure it's actually a number
-        try {
-
-            num = Integer.parseInt(getPromptNum.getText());
-
-        } catch (NumberFormatException formatException) {
-
-            //In case they put a non integer
-            gui.outputln("Tried to get prompts without giving a proper integer. Or you went over the int size limit of 2,147,483,647", GUI.STYLE_RED);
-            formatException.printStackTrace();
-            return;
-        }
-
-
-        //If it's greater than 0 we get prompts
-        if(num > 0) {
-
-            ArrayList<Prompt> allPrompts = prompts.getPrompts(prompts.getGenres());
-            if(num >= allPrompts.size()) {
-                gui.outputln("", null);
-                outputAllPrompts();
-                gui.outputln(
-                        "\nNumber of prompts requested(" + num + ") greater than or equal to number of prompts available(" + allPrompts.size() + ").\n" +
-                                "Outputting all prompts instead.", GUI.STYLE_RED
-                );
-
-                return;
-            }
-
-
-            final HashMap<File, Integer> specifications = new HashMap<>();
-            final ArrayList<File> genres = prompts.getGenres();
-
-
-            //We do this because in the while loop below we test for how many prompts are in a genre,
-            // but we had to do that by looping through a genre file each time the while loop ran,
-            // so I decided to loop through them all first.
-
-            //Though I guess if they have 50 genre files and request two prompts this is inefficient... maybe I shouldn't do this?
-            //Maybe I test for the difference.. IDK it's probably not that big a deal
-            ArrayList<Integer> genreSizes = new ArrayList<Integer>();
-            for(File genre : genres) {
-                genreSizes.add(prompts.getPrompts(genre).size());
-            }
-
-            //Here is where we actually get the random prompts
-            while(num > 0) {
-
-                int nextGenre = random.nextInt(genres.size());
-                File genre = genres.get(nextGenre);
-
-
-                if(specifications.containsKey(genre)) {
-                    specifications.put(genre, (specifications.get(genre) + 1));
-                } else {
-                    specifications.put(genre, 1);
-                }
-
-                //This just makes sure we don't go over the genres amount of available prompts
-                //So that we actually get the number of prompts requested.
-                //This doesn't break because we test if the prompts requested are >= to the number of prompts available above
-                if(specifications.get(genre) >= genreSizes.get(nextGenre)) {
-                    genres.remove(nextGenre);
-                    genreSizes.remove(nextGenre);
-                }
-
-                num--;
-            }
-
-            ArrayList<Prompt> randomPromptList = prompts.getXPromptsJp(specifications);
-            outputPrompts(randomPromptList);
-
-            //Otherwise we tell the user they input a number too low
-        } else {
-            gui.outputln("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", GUI.STYLE_RED);
-        }
-    }
-
-    //Clears the input in all JTextFields
-    private void clearInput() {
-        //I would put this outside so that it could be used in two places, but it gave me a null field when I did that
-        final JTextField[] textFields = new JTextField[]{genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete};
-
-        for (JTextField field : textFields) {
-            field.setText("");
-        }
-    }
-
-
     //IDK I had a gap in my GUI, so I just decided to make this
     private void unknowable() {
         Random random = new Random();
-        //I would put this outside so that it could be used in two places, but it gave me a null field when I did that
-        final JTextField[] textFields = new JTextField[]{genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete};
-        for(JTextField field : textFields) {
+
+        for(JTextField field : textFields()) {
             field.setText("????");
         }
         int i = random.nextInt(100, 200);
