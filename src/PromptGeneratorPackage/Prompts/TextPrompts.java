@@ -53,6 +53,7 @@ public class TextPrompts implements PromptManager {
      */
     @Override
     public int createGenre(String name) {
+        if(!PromptGenerator.PROMPTS_FOLDER.exists()) PromptGenerator.PROMPTS_FOLDER.mkdir();
         if(!TEXT_PROMPT_FOLDER.exists()) TEXT_PROMPT_FOLDER.mkdir();
 
         File newGenre = new File (TEXT_PROMPT_FOLDER, name + ".txt");
@@ -87,7 +88,7 @@ public class TextPrompts implements PromptManager {
                 return 0;
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Problem creating new genre " + name);
             e.printStackTrace();
             return -1;
@@ -99,6 +100,10 @@ public class TextPrompts implements PromptManager {
     //Takes a string without the .txt I could have made it take a file, but I don't need it like that
     @Override
     public boolean deleteGenre(String genreName) {
+        if(!PromptGenerator.PROMPTS_FOLDER.exists()) {
+            PromptGenerator.PROMPTS_FOLDER.mkdir();
+            return false;
+        }
         if(!TEXT_PROMPT_FOLDER.exists()) {
             TEXT_PROMPT_FOLDER.mkdir();
             return false;
@@ -163,11 +168,13 @@ public class TextPrompts implements PromptManager {
     @Override
     public int addPrompt(String prompt, File genre) {
         //Creates the file TextPrompts if it doesn't exist
+
+        if(!PromptGenerator.PROMPTS_FOLDER.exists()) PromptGenerator.PROMPTS_FOLDER.mkdir();
         if(!TEXT_PROMPT_FOLDER.exists()) TEXT_PROMPT_FOLDER.mkdir();
-        if (prompt.contains("*") || prompt.isBlank()) return 0;
 
         if(!genre.exists()) return -1;
 
+        if (prompt.contains("*") || prompt.isBlank()) return 0;
         try {
             //We use an OutputStreamWriter with StandardCharsets.UTF_8 so that writing Japanese (and potentially other special symbols)
             //actually works. Note this error didn't occur while I was in the IDE only outside of it after I built the program so be careful
@@ -193,6 +200,10 @@ public class TextPrompts implements PromptManager {
     public ArrayList<String> deletePrompt(String unwantedPrompt, File genre) {
         ArrayList<String> deletedPrompts = new ArrayList<String>();
 
+        if(!PromptGenerator.PROMPTS_FOLDER.exists()) {
+            PromptGenerator.PROMPTS_FOLDER.mkdir();
+            return deletedPrompts;
+        }
         if(!TEXT_PROMPT_FOLDER.exists()){
             TEXT_PROMPT_FOLDER.mkdir();
             return deletedPrompts;

@@ -10,26 +10,22 @@ You can get random prompts either completely randomly (random genres too),
 
 or you can specify which genres and how many from said genre you want!
 
-This is the branch for the upcoming version 1.2
+It has image prompts and text prompts
 
-Current version 1.2.0 (It has now released!...
-Kind of not like I've actually released more that it's in a state where I could release it might still be a few bugs though)
+Current version 1.2.1
 
 Changes:
 
-    Made a fully working version of the ImagePromptsPnl you can now:
-    
-    Make genres, delete genres, get genres, add prompts, delete prompts, get prompts, get random prompts, paramaterized random prompts, clear input, and nothing else
+    Fixed a glitch where it called break at an incorrect time in the promptManager interface
 
-    I increased parity or compatibility or whatever a bit of the TextPrompts and IamgePrompts class via the PromptManager interface
+    Made some improvements to the PromptPnl
 
-    I finished the PromptPnl abstract class that handels the prompt panels
+    Chenged the name of promptMissing to NoMorePrompts and changed the "text to out of prompts"
 
-    I made TextPromptPnl extend PromptPnl (signifgantly less code now)
+    Fixed a glitch where if it didn't have the starting folder it would never do anything 
+        (I checked for the sub starting folders existed but not the absolute starting folder)
 
-    I made the Prompt record back into a class because I needed it to be able to be able to set prompts after they were already set-
-
-     so that I could set any missing prompts to the path for the promptNotFound picture in the ImagePrompts class
+    Fixed a glitch where it would try to display a null image when confronted with an unsupported image type
 
 Planned changes:
 

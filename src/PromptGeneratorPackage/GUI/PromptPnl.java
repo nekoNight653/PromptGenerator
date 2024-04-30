@@ -203,7 +203,9 @@ public abstract class PromptPnl extends JPanel {
 
 
         if(result == JOptionPane.OK_OPTION) {
-            File genre = TextPrompts.TEXT_PROMPT_FOLDER;
+            //The reason this is assigned to the main prompt is because it doesn't matter we just need it to not complain that it could be unassigned
+            //It will always go Label then textField so this will be reassigned before it even does  anything
+            File genre = PromptGenerator.PROMPTS_FOLDER;
 
             //This is what gets the information from the JOptionPane
             for(JComponent comp : inputs) {
@@ -258,25 +260,31 @@ public abstract class PromptPnl extends JPanel {
 
 
             final HashMap<File, Integer> specifications = new HashMap<>();
-            final ArrayList<File> genres = prompts().getGenres();
 
 
-            //We do this because in the while loop below we test for how many prompts are in a genre,
-            // but we had to do that by looping through a genre file each time the while loop ran,
-            // so I decided to loop through them all first.
 
-            //Though I guess if they have 50 genre files and request two prompts this is inefficient... maybe I shouldn't do this?
-            //Maybe I test for the difference.. IDK it's probably not that big a deal
-            ArrayList<Integer> genreSizes = new ArrayList<Integer>();
-            for(File genre : genres) {
-                genreSizes.add(prompts().getPrompts(genre).size());
+            HashMap<File, Integer> genreToSize = new HashMap<>();
+            //We do this a because it can stop tons of looping (before it could loop the same genre to get the size several times before it was done)
+            //And also so that if any genres don't have any prompts we can remove them from the process before it starts
+            for(File genre : prompts().getGenres()) {
+
+                int size = prompts().getPrompts(genre).size();
+                if(size == 0 ) {
+                    continue;
+                }
+
+                genreToSize.put(genre, size);
             }
+            //This is because keySet doesn't seem to have an index that I can find
+            ArrayList<File> genres = new ArrayList<>(genreToSize.keySet());
 
             //Here is where we actually get the random prompts
             while(num > 0) {
 
                 int nextGenre = random.nextInt(genres.size());
                 File genre = genres.get(nextGenre);
+
+
 
 
                 if(specifications.containsKey(genre)) {
@@ -288,9 +296,9 @@ public abstract class PromptPnl extends JPanel {
                 //This just makes sure we don't go over the genres amount of available prompts
                 //So that we actually get the number of prompts requested.
                 //This doesn't break because we test if the prompts requested are >= to the number of prompts available above
-                if(specifications.get(genre) >= genreSizes.get(nextGenre)) {
+                if(specifications.get(genre) >= genreToSize.get(genre)) {
                     genres.remove(nextGenre);
-                    genreSizes.remove(nextGenre);
+                    genreToSize.remove(genre);
                 }
 
                 num--;

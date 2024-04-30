@@ -227,7 +227,21 @@ public class ImagePromptPnl extends PromptPnl {
 
                 currentPrompt = prompt.prompt();
                 File imagePath = new File(prompt.prompt());
+
                 BufferedImage image = ImageIO.read(imagePath);
+
+                //It seems to only cause an IOException if it's not an image file at all
+                //Like with an avif file it says it can do it, but it just returns null
+                //So we check for that here
+                if(image == null) {
+                    String name = imagePath.getName();
+                    int index = name.lastIndexOf('.');
+                    String extension = name.substring(index);
+
+                    gui.outputln("Improper image format for image: \n\"" + imagePath
+                        + "\"\n can't support \"" + extension + "\" files", GUI.STYLE_RED);
+                    continue;
+                }
 
                 String promptName = currentPrompt.substring((currentPrompt.lastIndexOf(File.separatorChar) + 1));
 

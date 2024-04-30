@@ -99,14 +99,12 @@ public interface PromptManager {
                     if (prompts.isEmpty() && i < specifications.get(genre)) {
 
                         randomPrompts.add(new Prompt(promptNotFound, genre));
-
                         break;
                     }
 
                 }
             } else  {
                 randomPrompts.add(new Prompt(promptNotFound, genre));
-                break;
             }
 
         }

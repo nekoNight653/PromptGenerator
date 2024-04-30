@@ -36,6 +36,10 @@ public class ImagePrompts implements  PromptManager {
     @Override
     public ArrayList<File> getGenres() {
         ArrayList<File> genres = new ArrayList<File>();
+        if(!PromptGenerator.PROMPTS_FOLDER.exists()) {
+            PromptGenerator.PROMPTS_FOLDER.mkdir();
+            return genres;
+        }
         if(!IMAGE_PROMPTS_FOLDER.exists()) {
             IMAGE_PROMPTS_FOLDER.mkdir();
             return genres;
@@ -58,6 +62,7 @@ public class ImagePrompts implements  PromptManager {
     public int createGenre(String name) {
         //We don't check for if PROMPTS_FOLDER exists since it should make it if it doesn't
         try {
+            if(!PromptGenerator.PROMPTS_FOLDER.exists()) PromptGenerator.PROMPTS_FOLDER.mkdir();
             //If the IMAGE_PROMPTS_FOLDER doesn't exist and we can't create it we return negative 1
             if(!IMAGE_PROMPTS_FOLDER.exists()) if(!IMAGE_PROMPTS_FOLDER.mkdir()) return -1;
 
@@ -77,6 +82,10 @@ public class ImagePrompts implements  PromptManager {
     //Deletes everything within the file to do this of course
     @Override
     public boolean deleteGenre(String genre) {
+        if(!PromptGenerator.PROMPTS_FOLDER.exists()) {
+            PromptGenerator.PROMPTS_FOLDER.mkdir();
+            return  false;
+        }
         if(!IMAGE_PROMPTS_FOLDER.exists()) {
             IMAGE_PROMPTS_FOLDER.mkdir();
             return false;
@@ -126,13 +135,13 @@ public class ImagePrompts implements  PromptManager {
         File stuff = new File(PromptGenerator.PROMPTS_FOLDER, "stuff");
         if(!stuff.exists()) stuff.mkdir();
 
-        File promptMissing = new File(stuff, "promptMissing.png");
+        File promptMissing = new File(stuff, "NoMorePrompts.png");
         if(promptMissing.exists()) return promptMissing;
 
         else {
             BufferedImage promptMissingPng = new BufferedImage(110, 15, BufferedImage.TYPE_BYTE_BINARY);
             Graphics2D graphics2D = promptMissingPng.createGraphics();
-            graphics2D.drawString("Image not found", 10F, 10F);
+            graphics2D.drawString("No more images!", 10F, 10F);
             graphics2D.dispose();
 
             try {
