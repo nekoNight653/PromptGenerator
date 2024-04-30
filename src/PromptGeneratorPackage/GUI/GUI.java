@@ -94,6 +94,7 @@ public class GUI {
         output.setFont(outputFont);
 
         outputScrollable = new JScrollPane(output);
+        outputScrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         outputStyled = output.getStyledDocument();
 
         STYLE_RED = outputStyled.addStyle("RedStyle", null);

@@ -109,17 +109,19 @@ public class ImagePromptPnl extends PromptPnl {
         getPararmedRandPrmptsBttn = new JButton(GUI.PARAMED_RAND_PRMPT_BTTN_NAME);
         createButton(getPararmedRandPrmptsBttn, this::getParameterizedRandPrompts, 0, ++y);
 
+        //clear anything in the textFields
+        clearInputBttn = new JButton(GUI.CLEAR_INPUT_BUTTON_NAME);
+        createButton(clearInputBttn, this::clearInput, 1, y);
+
         //Get all prompts button
         getAllPromptsButton = new JButton(GUI.GET_ALL_BUTTON_NAME);
-        createButton(getAllPromptsButton, this::outputAllPrompts, 1, y);
+        createButton(getAllPromptsButton, this::outputAllPrompts, 0, ++y);
 
         //Get all genres button
         getGenresButton = new JButton(GUI.GET_GENRES_BUTTON_NAME);
-        createButton(getGenresButton, this::outputAllGenres, 0, ++y);
+        createButton(getGenresButton, this::outputAllGenres, 1, y);
 
-        //Test button
-        clearInputBttn = new JButton(GUI.CLEAR_INPUT_BUTTON_NAME);
-        createButton(clearInputBttn, this::clearInput, 1, y);
+
     }
 
 
@@ -248,6 +250,7 @@ public class ImagePromptPnl extends PromptPnl {
                 gui.outputImg(image);
                 gui.outputln("Image prompt \"" + promptName + "\" from genre \"" + prompt.genre().getName() + "\" displaying:", null);
             }
+            gui.outputln("Image prompts got: ", null);
         } catch (IOException e) {
 
             gui.outputln("Prompt: <" + currentPrompt + "> not able to be converted to image?", GUI.STYLE_RED);

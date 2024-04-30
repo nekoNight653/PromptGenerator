@@ -174,24 +174,6 @@ public class TextPromptPnl extends PromptPnl {
 
     }
 
-    //Outputs all genre file names
-    @Override
-    protected void outputAllGenres() {
-        ArrayList<String> allNames = prompts.getGenreNames();
-        allNames.sort(Comparator.reverseOrder());
-
-        //This makes it so that there's a number counting down how many genres there are.
-        int genreNum = allNames.size() + 1;
-
-        //The gui.addOutputText("", null); just prints a blank line because a new line is built in to the method
-        gui.outputln("", null);
-        for(String name : allNames) {
-            gui.outputln( (--genreNum) + ": " + name, null);
-        }
-        gui.outputln("", null);
-    }
-
-
     //Prompt related buttons
 
     //Writes a prompt to the prompt file
@@ -251,6 +233,7 @@ public class TextPromptPnl extends PromptPnl {
 
             gui.outputln("\nGenre " + genre.getName().replace(".txt", "") + ":", null);
         }
+        gui.outputln("Text prompts gotten:", null);
     }
     //The reason I have this is the outputAllPrompts method is used in two places, so I can't do this inside it.
     //And I need to make these lines a runnable. Which maybe I could do a lambda with all three lines, but I don't like it

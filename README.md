@@ -12,20 +12,16 @@ or you can specify which genres and how many from said genre you want!
 
 It has image prompts and text prompts
 
-Current version 1.2.1
+Current version 1.2.2 (I guess it's 1.2.2 or would 1.2.1.1 be better.... no too long.)
 
 Changes:
 
-    Fixed a glitch where it called break at an incorrect time in the promptManager interface
+    Fixed a glitch where text would increase the gui size,
+    and then that would consequently increase the image size limit to beyond what you could see
 
-    Made some improvements to the PromptPnl
+    Slight GUI improvements
 
-    Chenged the name of promptMissing to NoMorePrompts and changed the "text to out of prompts"
-
-    Fixed a glitch where if it didn't have the starting folder it would never do anything 
-        (I checked for the sub starting folders existed but not the absolute starting folder)
-
-    Fixed a glitch where it would try to display a null image when confronted with an unsupported image type
+    Removed a bit of unneeded code
 
 Planned changes:
 
