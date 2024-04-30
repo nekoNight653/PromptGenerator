@@ -16,8 +16,9 @@ Current version 1.2.2
 
 Changes:
 
-    Actually fixed a glitch where text would increase the gui size,
-    and then that would consequently increase the image size limit to beyond what you could see
+    Fixed a glitch where images would get too big
+
+    Forgot to undo change I made so quickly made this new version!
 
 Planned changes:
 
