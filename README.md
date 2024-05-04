@@ -12,7 +12,7 @@ or you can specify which genres and how many from said genre you want!
 
 It has image prompts and text prompts
 
-Current version 1.2.2
+Current version 1.2.3
 
 Changes:
 
