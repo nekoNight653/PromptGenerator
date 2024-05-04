@@ -16,9 +16,10 @@ Current version 1.2.2
 
 Changes:
 
-    Fixed a glitch where images would get too big
-
-    Forgot to undo change I made so quickly made this new version!
+    Added a thread for when it tried to output lot's of prompts so users don't think it crashed 
+    (heck the person I showed it too thought that first time)
+    
+    Also is that really all it takes to make a thread?
 
 Planned changes:
 

@@ -223,6 +223,15 @@ public class ImagePromptPnl extends PromptPnl {
     //If it can't convert a prompt to a buffered image it outputs "Prompt: <" + prompt + "> not able to be converted to image?"
     @Override
     protected void outputPrompts(ArrayList<Prompt> promptList) {
+        //I check if we're about to output a large(ok well kinda large takes a bit) amount of images, and if it is I open a thread to do it
+        if(promptList.size() > 4) {
+            Thread outputImges = new Thread(() -> outputPromptLoop(promptList));
+            outputImges.start();
+        } else {
+            outputPromptLoop(promptList);
+        }
+    }
+    private void outputPromptLoop(ArrayList<Prompt> promptList) {
         String currentPrompt = "";
         try {
             for(Prompt prompt : promptList) {
@@ -241,7 +250,7 @@ public class ImagePromptPnl extends PromptPnl {
                     String extension = name.substring(index);
 
                     gui.outputln("Improper image format for image: \n\"" + imagePath
-                        + "\"\n can't support \"" + extension + "\" files", GUI.STYLE_RED);
+                            + "\"\n can't support \"" + extension + "\" files", GUI.STYLE_RED);
                     continue;
                 }
 
@@ -256,6 +265,7 @@ public class ImagePromptPnl extends PromptPnl {
             gui.outputln("Prompt: <" + currentPrompt + "> not able to be converted to image?", GUI.STYLE_RED);
 
         }
+
     }
     @Override
     protected void outputAllPrompts() {

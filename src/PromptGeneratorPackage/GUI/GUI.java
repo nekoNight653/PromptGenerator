@@ -5,6 +5,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 public class GUI {
 
@@ -172,8 +173,10 @@ public class GUI {
     *
     * Note after that when the gui gets a scrollbar it gets shorter by like 15px (I didn't notice it with just text,
     *  but since the images don't retroactively scale with the gui it was very obvious)
+    *
+    * returns false if it had a problem, and true if it didn't
     */
-    public void outputImg(BufferedImage originalImage) {
+    public boolean outputImg(BufferedImage originalImage) {
 
         //We multiply by 0.95 because it will try and increase the output panel size slowly over time if we don't
         //We use the OUTPUT_WIDTH and screenSize.height because those are more relevant to the size than the size of output,
@@ -192,8 +195,6 @@ public class GUI {
                 SimpleAttributeSet iconStyle = new SimpleAttributeSet();
                 StyleConstants.setIcon(iconStyle, new ImageIcon(originalImage));
 
-//                outputln("Width: " + imageWidth +" Height: " + imageHeight + " Output width: " + output.getWidth() + " Output height: " + output.getHeight(), styleRed);
-
                 outputStyled.insertString(0, "Image" + "\n", iconStyle);
 
             // Otherwise we need to scale it appropriately
@@ -208,12 +209,15 @@ public class GUI {
                 int newWidth;
                 int newHeight;
 
-                if(maxWidth < imageWidth) {
+                //We get the difference between the width and width max and height and height max, so we scale by whichever is greater
+                if((imageWidth - maxWidth) > (imageHeight - maxHeight)) {
 
                     int offset = imageWidth - maxWidth;
                     newWidth = maxWidth;
                     newHeight = (int) (imageHeight - offset / dimensionsRatio);
+
                 } else {
+
                     int offset = imageHeight - maxHeight;
                     newHeight = maxHeight;
                     newWidth = (int) (imageWidth - offset * dimensionsRatio);
@@ -227,21 +231,21 @@ public class GUI {
                 SimpleAttributeSet iconStyle = new SimpleAttributeSet();
                 StyleConstants.setIcon(iconStyle, new ImageIcon(resizedImage));
 
-//                outputln("Width: " + newWidth +" Height: " + newHeight + " Output width: " + output.getWidth() + " Output height: " + output.getHeight(), styleRed);
 
                 outputStyled.insertString(0, "Image " + "\n", iconStyle);
             }
-            //This because otherwise it teleports you to the bottom everytime
+            //This because otherwise it teleports you to the bottom everytime, and I'd prefer it teleport you to the top where the new things are
             output.setCaretPosition(0);
 
         } catch (BadLocationException e) {
-            System.out.println("Couldn't output image");
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     //Clears the output textPane
-    public void clearOuput() {
+    public void clearOutput() {
         output.setText("");
     }
 }
