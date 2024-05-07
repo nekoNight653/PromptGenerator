@@ -46,7 +46,7 @@ public class TextPromptPnl extends PromptPnl {
      * clearInputButton clears all user input in the JTextFields
      * unknownButton who knows?
      */
-    private final JButton clearOutputButton, clearInputButton, unknownButton;
+    private final JButton clearInputButton;
 
     /* The text fields
      * genreToAdd is the input for which genre to add
@@ -110,21 +110,14 @@ public class TextPromptPnl extends PromptPnl {
         paramedRandPrmptBttn = new JButton(GUI.PARAMED_RAND_PRMPT_BTTN_NAME);
         createButton(paramedRandPrmptBttn, this::getParameterizedRandPrompts, 0, ++y);
 
-        unknownButton = new JButton(GUI.UNKOWN_BUTTON_NAME);
-        createButton(unknownButton, this::unknowable, 1, y);
+        clearInputButton = new JButton(GUI.CLEAR_INPUT_BUTTON_NAME);
+        createButton(clearInputButton, this::clearInput, 1, y);
 
         getAllButton = new JButton(GUI.GET_ALL_BUTTON_NAME);
         createButton(getAllButton, this::outputAllPromptsSpaced, 0, ++y);
 
-        clearInputButton = new JButton(GUI.CLEAR_INPUT_BUTTON_NAME);
-        createButton(clearInputButton, this::clearInput, 1, y);
-
         getGenresButton = new JButton(GUI.GET_GENRES_BUTTON_NAME);
-        createButton(getGenresButton, this::outputAllGenres, 0, ++y);
-
-        clearOutputButton = new JButton(GUI.CLEAR_OUTPUT_BUTTON_NAME);
-        createButton(clearOutputButton, gui::clearOutput, 1, y);
-
+        createButton(getGenresButton, this::outputAllGenres, 1, y);
 
     }
     //Handing over some information to our resident abstract class
@@ -270,17 +263,4 @@ public class TextPromptPnl extends PromptPnl {
         gui.outputln("\nChosen prompts:", null);
     }
 
-    //IDK I had a gap in my GUI, so I just decided to make this
-    private void unknowable() {
-        Random random = new Random();
-
-        for(JTextField field : textFields()) {
-            field.setText("????");
-        }
-        int i = random.nextInt(100, 200);
-        while (i > 0) {
-            gui.outputln("?????", GUI.STYLE_RED);
-            i--;
-        }
-    }
 }

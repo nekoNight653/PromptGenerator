@@ -218,13 +218,10 @@ public class ImagePromptPnl extends PromptPnl {
 
     @Override
     protected void outputPrompts(ArrayList<Prompt> promptList) {
-        //I check if we're about to output a large(ok well kinda large takes a bit) amount of images, and if it is I open a thread to do it
-        if(promptList.size() > 4) {
-            Thread outputImages = new Thread(() -> outputPromptLoop(promptList));
-            outputImages.start();
-        } else {
-            outputPromptLoop(promptList);
-        }
+
+        Thread outputImages = new Thread(() -> outputPromptLoop(promptList));
+        outputImages.start();
+
     }
 
     //For each prompt on the list it creates a buffered image out of that and passes it to the gui.outputImg method

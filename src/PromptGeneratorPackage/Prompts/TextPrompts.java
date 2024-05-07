@@ -58,14 +58,24 @@ public class TextPrompts implements PromptManager {
         File newGenre = new File (TEXT_PROMPT_FOLDER, name + ".txt");
 
 
+        //Here we return if it runs into any problem with creating it
+        try {
+            if(!newGenre.createNewFile()) {
+                System.out.println("Genre " + name + " already exists");
+                return 0;
+            }
+
+        } catch (IOException e) {
+            System.out.println("Problem creating new genre " + name);
+            e.printStackTrace();
+            return -1;
+        }
+
+        System.out.println("File \"" + newGenre + "\" created");
 
         try {
-            if(newGenre.createNewFile()) {
-                System.out.println("Created new genre " + name);
-
-                try {
-                    BufferedWriter fileWriter = new BufferedWriter(new FileWriter(newGenre));
-                    fileWriter.write("""
+            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(newGenre));
+            fileWriter.write("""
                             *Welcome to a genre file! All lines that aren't a prompt must contain a * or be empty
                             *All prompts must be within 1 line and can't contain a *
                             *Prompts can contain a-z 0-9 _-&.,'[]{}()/?!+=~"\\
@@ -74,25 +84,13 @@ public class TextPrompts implements PromptManager {
                             *This file must be in the same directory as the jar file, otherwise it will create a new prompts file
                              
                              """);
-                    fileWriter.close();
-                } catch (IOException e) {
-                    System.out.println("Error writing starting line in a genre file?!");
-                    e.printStackTrace();
-                }
-
-                return 1;
-
-            } else {
-                System.out.println("Genre " + name + " already exists");
-                return 0;
-            }
-
-        } catch (Exception e) {
-            System.out.println("Problem creating new genre " + name);
+            fileWriter.close();
+        } catch (IOException e) {
+            System.out.println("Error writing starting line in a genre file?!");
             e.printStackTrace();
-            return -1;
         }
 
+        return 1;
     }
 
     //Just deletes a genre file
@@ -126,27 +124,32 @@ public class TextPrompts implements PromptManager {
             return promptList;
         }
 
+        InputStreamReader isr;
+        BufferedReader reader;
         try {
             //We use an InputStreamReader with StandardCharsets.UTF_8 so that reading Japanese (and potentially other special symbols)
             //actually works. Note this error didn't occur while I was in the IDE only outside of it after I built the program so be careful
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(genre), StandardCharsets.UTF_8);
-            BufferedReader reader = new BufferedReader(isr);
-            String line;
-            try {
-                while ((line = reader.readLine()) != null) {
-                    if (!line.contains("*") && !line.isBlank()) {
-                        promptList.add(new Prompt(line, genre));
-                    }
-                }
-                reader.close();
-
-            } catch (IOException e) {
-                System.out.println("Problem reading file: " + genre);
-                e.printStackTrace();
-            }
+            isr = new InputStreamReader(new FileInputStream(genre), StandardCharsets.UTF_8);
+            reader = new BufferedReader(isr);
 
         } catch (FileNotFoundException e) {
             System.out.println("File " + genre + " not found");
+            e.printStackTrace();
+            return promptList;
+        }
+
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+
+                if (!line.contains("*") && !line.isBlank()) {
+                    promptList.add(new Prompt(line, genre));
+                }
+            }
+            reader.close();
+
+        } catch (IOException e) {
+            System.out.println("Problem reading file: " + genre);
             e.printStackTrace();
         }
 
@@ -174,6 +177,7 @@ public class TextPrompts implements PromptManager {
         if(!genre.exists()) return -1;
 
         if (prompt.contains("*") || prompt.isBlank()) return 0;
+
         try {
             //We use an OutputStreamWriter with StandardCharsets.UTF_8 so that writing Japanese (and potentially other special symbols)
             //actually works. Note this error didn't occur while I was in the IDE only outside of it after I built the program so be careful
@@ -182,7 +186,7 @@ public class TextPrompts implements PromptManager {
 
             promptWriter.write("\n" + prompt);
             promptWriter.close();
-            System.out.println("Prompt: <" + prompt + "> wrote");
+            System.out.println("Prompt: \"" + prompt + "\" wrote");
 
         } catch (IOException e) {
             System.out.println("Error writing prompt in file for some reason");
@@ -211,17 +215,33 @@ public class TextPrompts implements PromptManager {
             return deletedPrompts;
         }
 
+        List<String> lines;
         try {
+            lines = Files.readAllLines(genre.toPath());
 
-            List<String> lines = Files.readAllLines(genre.toPath());
+        } catch (IOException e) {
+            System.out.println("Problem reading file");
+            e.printStackTrace();
+            return deletedPrompts;
+        }
 
+        OutputStreamWriter osw;
+        BufferedWriter buffWriter;
+        try {
             //We use an OutputStreamWriter with StandardCharsets.UTF_8 so that writing Japanese (and potentially other special symbols)
             //actually works. Note this error didn't occur while I was in the IDE only outside of it after I built the program so be careful
-            OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(genre), StandardCharsets.UTF_8);
-            BufferedWriter buffWriter = new BufferedWriter(osw);
+            osw = new OutputStreamWriter(new FileOutputStream(genre), StandardCharsets.UTF_8);
+            buffWriter = new BufferedWriter(osw);
+        } catch (FileNotFoundException e) {
+            System.out.println("File \"" + genre + "\" not found");
+            e.printStackTrace();
+            return deletedPrompts;
+        }
 
+        //Here's where we actually rewrite the file without the prompt in it
+        try {
             //Since it's a fencepost problem as far as \n go
-            if(!lines.get(0).equals(unwantedPrompt)) {
+            if (!lines.get(0).equals(unwantedPrompt)) {
                 buffWriter.write(lines.get(0));
             } else {
                 deletedPrompts.add(lines.get(0));
@@ -229,8 +249,8 @@ public class TextPrompts implements PromptManager {
             lines.remove(0);
 
             //Looping through the file to rewrite it without the specified string
-            for(String line : lines) {
-                if(!line.equals(unwantedPrompt)) {
+            for (String line : lines) {
+                if (!line.equals(unwantedPrompt)) {
 
                     buffWriter.write("\n" + line);
 
@@ -239,11 +259,11 @@ public class TextPrompts implements PromptManager {
                 }
             }
             buffWriter.close();
-
         } catch (IOException e) {
-            System.out.println("Problem deleting prompt");
-            e.printStackTrace();
+            System.out.println("Problem writing to genre \"" + genre + "\"");
+            return deletedPrompts;
         }
+
         System.out.println("these " + deletedPrompts + " prompts have been deleted");
         return deletedPrompts;
     }

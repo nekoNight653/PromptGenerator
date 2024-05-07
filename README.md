@@ -12,16 +12,16 @@ or you can specify which genres and how many from said genre you want!
 
 It has image prompts and text prompts
 
-Current version 1.2.3
+Current version 1.2.4
 
 Changes:
 
-    Fixed the refactoring mistake that happened making my frame called PromptGeneratorPackage.PromptGenerator 
+    Made a panel for misc buttons like  "clear output"
 
-    Made the outputImg function throw a BadLocation exception rather than handling it itself
-    (It didn't have a way to get the image name)
+    Made it so that image prompts always output on a different thread rather than just when the number requested is over 4,
+    because I fond that depending on the image they could take a while
 
-    Slight improvements to the cleansliness of the code.
+    A few more cleanliness improvements
 
 
 Planned changes:

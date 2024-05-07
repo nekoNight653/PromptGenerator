@@ -12,17 +12,20 @@ public class GUI {
 
     //This just gets the percents of the screen width that the input and output panels use, since they will together use all of the screen.
     //I have it like this, so I can easily change it later
-    private static final float INPUT_WIDTH_PERCENT = 0.6F;
-    private static final float OUTPUT_WIDTH_PERCENT = 1 - INPUT_WIDTH_PERCENT;
+    private static final float PROMPT_PNL_WIDTH_PERCENT = 0.5F;
+    private static final float MISC_CNTRL_PNL_WIDTH_PERCENT = (1 - PROMPT_PNL_WIDTH_PERCENT)/4;
+    private static final float OUTPUT_WIDTH_PERCENT = 1 - (PROMPT_PNL_WIDTH_PERCENT + MISC_CNTRL_PNL_WIDTH_PERCENT);
 
     //This is the width of the inputPanel
-    public static final int INPUT_WIDTH = (int) (screenSize.width * INPUT_WIDTH_PERCENT);
+    public static final int INPUT_WIDTH = (int) (screenSize.width * PROMPT_PNL_WIDTH_PERCENT);
 
     //This is the height of both of the prompt panels (TextPromptPnl and ImagePromptPnl)
     public static final int PRMPT_PNL_HEIGHT = (int) (screenSize.height * 0.3);
 
     //This is the size of the output panel (Not sure if I really need this as a constant)
     public static final int OUTPUT_WIDTH = (int) (screenSize.width * OUTPUT_WIDTH_PERCENT);
+    //This is the width for the miscControlPanel
+    public static final int MISC_CNTRL_PNL_WIDTH = (int) (screenSize.width * MISC_CNTRL_PNL_WIDTH_PERCENT);
 
     //The fonts for the input panel and output panel
     public static final Font inputFont = new Font("serif", Font.PLAIN, 30);
@@ -39,7 +42,7 @@ public class GUI {
     //These are just the names of all my buttons
     //I don't know if I should use them anymore (I use to use them to check  which button was being clicked, but I use lambdas now)
 
-    //TextPromptPnl button names
+    //Button name constants
     public static final String ADD_GENRE_BUTTON_NAME = "Create genre";
     public static final String DELETE_GENRE_BUTTON_NAME = "Delete genre";
     public static final String ADD_BUTTON_NAME = "Add prompt";
@@ -50,7 +53,6 @@ public class GUI {
     public static final String CLEAR_INPUT_BUTTON_NAME = "Clear input";
     public static final String GET_GENRES_BUTTON_NAME = "Get all genres";
     public static final String CLEAR_OUTPUT_BUTTON_NAME = "Clear output";
-    public static final String UNKOWN_BUTTON_NAME = "????";
 
     private final JFrame frame = new JFrame();
 
@@ -58,16 +60,24 @@ public class GUI {
     * textPromptsPnl contains all the input methods for dealing with text prompts and a little bit extra
     * imagePromptsPnl contains all the input methods for dealing with image prompts
     * inputPnl contains the textPromptsPnl and imagePromptsPnl
+    *
+    * miscCntrlPnl is for buttons and things that control non-prompt things
+    *
+    * outputPanel is a panel just for the output textPane
     */
-    private JPanel inputPnl, outputPanel;
-    //The labels just identify where the text panel and image panel start
-    private JLabel textPrmptLbl, imagePrmptLbl;
+    private JPanel promptPnl, miscCntrlPnl, outputPanel;
+    //The labels just tell what the components below it are for
+    private JLabel textPrmptLbl, imagePrmptLbl, miscBttnsLbl;
     //For what ever I want to display, such as prompt added or which prompts were got
     private StyledDocument outputStyled;
     private JScrollPane outputScrollable;
     private JTextPane output;
 
+    private JButton clearOutput;
+
     public void gui() {
+
+        GridBagConstraints gbc = new GridBagConstraints();
 
         TextPromptPnl textPromptsPnl = new TextPromptPnl();
         ImagePromptPnl imagePromptsPnl = new ImagePromptPnl();
@@ -80,6 +90,7 @@ public class GUI {
         */
         Dimension outputDimensions = new Dimension(OUTPUT_WIDTH, screenSize.height);
 
+        //The output panel and all it's elements
         outputPanel = new JPanel();
         outputPanel.setBorder(BorderFactory.createEmptyBorder());
         outputPanel.setPreferredSize(outputDimensions);
@@ -108,27 +119,49 @@ public class GUI {
         StyleConstants.setForeground(STYLE_DARK_ORANGE, new Color(150, 100, 0));
 
         output.setEditable(false);
-        output.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.gray));
+        output.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.GRAY));
         outputPanel.add(outputScrollable);
 
-        inputPnl = new JPanel();
-        inputPnl.setFont(inputFont);
-        inputPnl.setBorder(BorderFactory.createEmptyBorder());
-        inputPnl.setPreferredSize(new Dimension(INPUT_WIDTH, screenSize.height));
-        inputPnl.setLayout(new BoxLayout(inputPnl, BoxLayout.Y_AXIS));
+        //The misc control panel and all it's elements
+        miscCntrlPnl = new JPanel();
+        miscCntrlPnl.setFont(inputFont);
+        miscCntrlPnl.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED, Color.GRAY, Color.BLACK));
+        miscCntrlPnl.setPreferredSize(new Dimension(MISC_CNTRL_PNL_WIDTH, screenSize.height));
+        miscCntrlPnl.setLayout(new GridBagLayout());
+
+        gbc.gridx = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+
+        miscBttnsLbl = new JLabel("Misc");
+        miscBttnsLbl.setFont(inputFont);
+        gbc.gridy = 0;
+        miscCntrlPnl.add(miscBttnsLbl);
+
+        clearOutput = new JButton(CLEAR_OUTPUT_BUTTON_NAME);
+        clearOutput.addActionListener(e -> clearOutput());
+        clearOutput.setFont(inputFont);
+        gbc.gridy = 1;
+        miscCntrlPnl.add(clearOutput, gbc);
+
+
+        //The prompt panel and all it's elements
+        promptPnl = new JPanel();
+        promptPnl.setFont(inputFont);
+        promptPnl.setBorder(BorderFactory.createEmptyBorder());
+        promptPnl.setPreferredSize(new Dimension(INPUT_WIDTH, screenSize.height));
+        promptPnl.setLayout(new BoxLayout(promptPnl, BoxLayout.Y_AXIS));
 
         textPrmptLbl = new JLabel("Text prompts");
         textPrmptLbl.setFont(inputFont);
-        inputPnl.add(textPrmptLbl);
+        promptPnl.add(textPrmptLbl);
 
-        inputPnl.add(textPromptsPnl);
+        promptPnl.add(textPromptsPnl);
 
         imagePrmptLbl = new JLabel("Image prompts");
         imagePrmptLbl.setFont(inputFont);
-        inputPnl.add(imagePrmptLbl);
+        promptPnl.add(imagePrmptLbl);
 
-        inputPnl.add(imagePromptsPnl);
-
+        promptPnl.add(imagePromptsPnl);
 
         frame.setLayout(new BorderLayout());
         frame.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
@@ -138,7 +171,8 @@ public class GUI {
         frame.setVisible(true);
 
         frame.add(outputPanel, BorderLayout.EAST);
-        frame.add(inputPnl, BorderLayout.CENTER);
+        frame.add(promptPnl, BorderLayout.CENTER);
+        frame.add(miscCntrlPnl, BorderLayout.WEST);
     }
 
      /*
