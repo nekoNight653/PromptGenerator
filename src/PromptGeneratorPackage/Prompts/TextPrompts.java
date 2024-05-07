@@ -25,17 +25,16 @@ public class TextPrompts implements PromptManager {
         return genres;
     }
 
-    //All this does is loops through all the files in TextPrompts and gets the name - the .txt
-    //Then it adds them to the arrayList of names
+    //Yes this basically identical to the default in the interface, but I really wanted to get rid of the .txt
     @Override
-    public ArrayList<String> getGenreNames() {
-        ArrayList<String> fileNames = new ArrayList<>();
+    public String[] getGenreNames() {
+        ArrayList<File> genres = getGenres();
+        String[] names = new String[genres.size()];
 
-        for(String name : PromptManager.super.getGenreNames()) {
-            fileNames.add(name.replace(".txt", ""));
+        for (int i = genres.size(); i > 0; i--) {
+            names[i - 1] = genres.get(i - 1).getName().replace(".txt", "");
         }
-
-        return fileNames;
+        return names;
     }
 
     //This gets a file from a genre name

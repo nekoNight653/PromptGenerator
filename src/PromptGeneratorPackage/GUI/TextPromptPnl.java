@@ -58,7 +58,7 @@ public class TextPromptPnl extends PromptPnl {
     private final JTextField genreToAdd, genreToDelete, promptToAdd, getPromptNum, promptToDelete;
 
     //The JComboBox for choosing which genre
-    private final JComboBox genreToAddTo, genreToDeleteFrom;
+    private final JComboBox<String> genreToAddTo, genreToDeleteFrom;
 
 
     public TextPromptPnl() {
@@ -90,7 +90,7 @@ public class TextPromptPnl extends PromptPnl {
         bttnTxtFldCombo(addButton, promptToAdd, this::addPrompt, ++y);
 
 
-        genreToAddTo = new JComboBox<>(prompts.getGenreNames().toArray());
+        genreToAddTo = new JComboBox<String>(prompts.getGenreNames());
         createComboBox(genreToAddTo, 3, y);
 
         deleteButton = new JButton(GUI.DELETE_BUTTON_NAME);
@@ -98,7 +98,7 @@ public class TextPromptPnl extends PromptPnl {
 
         bttnTxtFldCombo(deleteButton, promptToDelete, this::deletePrompt, ++y);
 
-        genreToDeleteFrom = new JComboBox<>(prompts.getGenreNames().toArray());
+        genreToDeleteFrom = new JComboBox<String>(prompts.getGenreNames());
         createComboBox(genreToDeleteFrom, 3, y);
 
 
@@ -168,12 +168,11 @@ public class TextPromptPnl extends PromptPnl {
     @Override
     protected void genreExistenceUpdate() {
 
-        genreToAddTo.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()));
-        genreToDeleteFrom.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()));
+        genreToAddTo.setModel(new DefaultComboBoxModel<>(prompts.getGenreNames()));
+        genreToDeleteFrom.setModel(new DefaultComboBoxModel<>(prompts.getGenreNames()));
 
     }
-
-    //Prompt related buttons
+    //Button functions
 
     //Writes a prompt to the prompt file
     //Then outputs dark orange text telling the user what prompt they wrote
@@ -182,14 +181,14 @@ public class TextPromptPnl extends PromptPnl {
         String genreName = (String) genreToAddTo.getSelectedItem();
         File genre = prompts.getGenreFile(genreName);
 
-        int writePromptReturn = prompts.addPrompt(promptToAdd.getText(), genre);
-        if(writePromptReturn == 0) {
+        int result = prompts.addPrompt(promptToAdd.getText(), genre);
+        if(result == 0) {
             gui.outputln("Prompt either empty or contained a *", GUI.STYLE_RED);
             return;
-        } else if (writePromptReturn == -1) {
+        } else if (result == -1) {
             //Since you choose the genre from a combo box I don't know how this result would be possible but...
             gui.outputln("Genre " + genreName + " doesn't exist?", GUI.STYLE_RED);
-        } else if (writePromptReturn == -2) {
+        } else if (result == -2) {
             gui.outputln("An unexpected IOException occurred, prompt not wrote.", GUI.STYLE_RED);
             return;
         }
@@ -209,6 +208,7 @@ public class TextPromptPnl extends PromptPnl {
 
     //It goes through each genre and outputs all prompts 1 per line with a number for which one it is in that genre
     //This method is used in two places, so I don't print a new line before and after it, but I heavily suggest you do that in most situations
+    @Override
     protected void outputAllPrompts() {
 
         for(File genre : prompts.getGenres()) {

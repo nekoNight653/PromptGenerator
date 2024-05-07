@@ -6,15 +6,13 @@ import PromptGeneratorPackage.Prompts.PromptManager;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ImagePromptPnl extends PromptPnl {
     private final static ImagePrompts prompts = new ImagePrompts();
@@ -56,7 +54,7 @@ public class ImagePromptPnl extends PromptPnl {
     */
     private final JTextField promptToAdd, promptToDelete, getRandPromptNum;
     //The combo boxes for choosing which genre a prompt is going in going out of
-    private final JComboBox genreToAddTo, genreToDeleteFrom;
+    private final JComboBox<String> genreToAddTo, genreToDeleteFrom;
 
     //The misc buttons
     private final JButton clearInputBttn;
@@ -89,7 +87,7 @@ public class ImagePromptPnl extends PromptPnl {
         promptToAdd = new JTextField();
         bttnTxtFldCombo(addPromptButton, promptToAdd, this::addPrompt, ++y);
 
-        genreToAddTo = new JComboBox<>(prompts.getGenreNames().toArray());
+        genreToAddTo = new JComboBox<>(prompts.getGenreNames());
         createComboBox(genreToAddTo, 3, y);
 
         //Prompt deleting inputs
@@ -97,7 +95,7 @@ public class ImagePromptPnl extends PromptPnl {
         promptToDelete = new JTextField();
         bttnTxtFldCombo(deletePromptButton, promptToDelete, this::deletePrompt, ++y);
 
-        genreToDeleteFrom = new JComboBox<>(prompts.getGenreNames().toArray());
+        genreToDeleteFrom = new JComboBox<>(prompts.getGenreNames());
         createComboBox(genreToDeleteFrom, 3, y);
 
         //Truly random prompt acquirers inputs
@@ -172,8 +170,8 @@ public class ImagePromptPnl extends PromptPnl {
     @Override
     protected void genreExistenceUpdate() {
 
-        genreToAddTo.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()));
-        genreToDeleteFrom.setModel(new DefaultComboBoxModel(prompts.getGenreNames().toArray()));
+        genreToAddTo.setModel(new DefaultComboBoxModel<>(prompts.getGenreNames()));
+        genreToDeleteFrom.setModel(new DefaultComboBoxModel<>(prompts.getGenreNames()));
 
     }
 
@@ -217,23 +215,27 @@ public class ImagePromptPnl extends PromptPnl {
         gui.outputln(result, style);
     }
 
-    //For each prompt on the list it creates a buffered image out of that and passes it to the gui.outputImg method
-    //Then it outputs what the prompt name is and which genre it's from
 
-    //If it can't convert a prompt to a buffered image it outputs "Prompt: <" + prompt + "> not able to be converted to image?"
     @Override
     protected void outputPrompts(ArrayList<Prompt> promptList) {
         //I check if we're about to output a large(ok well kinda large takes a bit) amount of images, and if it is I open a thread to do it
         if(promptList.size() > 4) {
-            Thread outputImges = new Thread(() -> outputPromptLoop(promptList));
-            outputImges.start();
+            Thread outputImages = new Thread(() -> outputPromptLoop(promptList));
+            outputImages.start();
         } else {
             outputPromptLoop(promptList);
         }
     }
+
+    //For each prompt on the list it creates a buffered image out of that and passes it to the gui.outputImg method
+    //Then it outputs what the prompt name is and which genre it's from
+
+    //If it can't convert a prompt to a buffered image it outputs "Prompt: "prompt" not able to be converted to image?"
     private void outputPromptLoop(ArrayList<Prompt> promptList) {
         String currentPrompt = "";
+
         try {
+
             for(Prompt prompt : promptList) {
 
                 currentPrompt = prompt.prompt();
@@ -244,7 +246,7 @@ public class ImagePromptPnl extends PromptPnl {
                 //It seems to only cause an IOException if it's not an image file at all
                 //Like with an avif file it says it can do it, but it just returns null
                 //So we check for that here
-                if(image == null) {
+                if (image == null) {
                     String name = imagePath.getName();
                     int index = name.lastIndexOf('.');
                     String extension = name.substring(index);
@@ -256,13 +258,20 @@ public class ImagePromptPnl extends PromptPnl {
 
                 String promptName = currentPrompt.substring((currentPrompt.lastIndexOf(File.separatorChar) + 1));
 
-                gui.outputImg(image);
-                gui.outputln("Image prompt \"" + promptName + "\" from genre \"" + prompt.genre().getName() + "\" displaying:", null);
+                try {
+
+                    gui.outputImg(image);
+                    gui.outputln("Image prompt \"" + promptName + "\" from genre \"" + prompt.genre().getName() + "\" displaying:", null);
+
+                } catch (BadLocationException e) {
+                    gui.outputln("Image prompt \"" + promptName + "\" not found", GUI.STYLE_RED);
+                }
             }
             gui.outputln("Image prompts got: ", null);
+
         } catch (IOException e) {
 
-            gui.outputln("Prompt: <" + currentPrompt + "> not able to be converted to image?", GUI.STYLE_RED);
+            gui.outputln("Prompt: \"" + currentPrompt + "\" not able to be converted to image?", GUI.STYLE_RED);
 
         }
 

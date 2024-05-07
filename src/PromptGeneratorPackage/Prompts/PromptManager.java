@@ -40,13 +40,14 @@ public interface PromptManager {
      * All this does is return the names of the genre files
      * This is used for the combo boxes in imagePromptPnl
      */
-    default ArrayList<String> getGenreNames() {
-        ArrayList<String> genreNames = new ArrayList<String>();
+    default String[] getGenreNames() {
+        ArrayList<File> genres = getGenres();
+        String[] names = new String[genres.size()];
 
-        for (File genre: getGenres()) {
-            genreNames.add(genre.getName());
+        for (int i = genres.size(); i > 0; i--) {
+            names[i - 1] = genres.get(i - 1).getName();
         }
-        return genreNames;
+        return names;
     }
 
 
@@ -69,7 +70,7 @@ public interface PromptManager {
      * Which files it gets prompts from is decided by the key set of the hashmap "specifications"
      * It then gets x prompts from that file where x is the Integer attached to that key
      *
-     * Puts the prompt(null, genre) if it runs out of prompts in a genre
+     * Puts the prompt(promptNotFound, genre) if it runs out of prompts in a genre
      */
     String promptNotFound = "No more prompts";
     default ArrayList<Prompt> getXRandomPrompts(HashMap<File, Integer> specifications) {

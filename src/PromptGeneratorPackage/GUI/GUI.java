@@ -5,7 +5,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class GUI {
 
@@ -134,7 +133,7 @@ public class GUI {
         frame.setLayout(new BorderLayout());
         frame.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setTitle("PromptGeneratorPackage.PromptsFldr.Prompt generator");
+        frame.setTitle("Prompt generator");
         frame.pack();
         frame.setVisible(true);
 
@@ -173,10 +172,8 @@ public class GUI {
     *
     * Note after that when the gui gets a scrollbar it gets shorter by like 15px (I didn't notice it with just text,
     *  but since the images don't retroactively scale with the gui it was very obvious)
-    *
-    * returns false if it had a problem, and true if it didn't
     */
-    public boolean outputImg(BufferedImage originalImage) {
+    public void outputImg(BufferedImage originalImage) throws BadLocationException {
 
         //We multiply by 0.95 because it will try and increase the output panel size slowly over time if we don't
         //We use the OUTPUT_WIDTH and screenSize.height because those are more relevant to the size than the size of output,
@@ -188,60 +185,57 @@ public class GUI {
         int imageHeight = originalImage.getHeight();
 
 
-        try {
-            // if it's smaller than the max width and height we don't need to do anything!
-            if (imageWidth < maxWidth && imageHeight < maxHeight) {
 
-                SimpleAttributeSet iconStyle = new SimpleAttributeSet();
-                StyleConstants.setIcon(iconStyle, new ImageIcon(originalImage));
+        // if it's smaller than the max width and height we don't need to do anything!
+        if (imageWidth < maxWidth && imageHeight < maxHeight) {
 
-                outputStyled.insertString(0, "Image" + "\n", iconStyle);
+            SimpleAttributeSet iconStyle = new SimpleAttributeSet();
+            StyleConstants.setIcon(iconStyle, new ImageIcon(originalImage));
 
-            // Otherwise we need to scale it appropriately
+            outputStyled.insertString(0, "Image" + "\n", iconStyle);
+
+        // Otherwise we need to scale it appropriately
+        } else {
+            //Gets the ratio of the width to the height
+            //Example 1000 width 10 height would return 100 because the ratio is 100-Width to 1-Height
+            //Example two 10 width 1000 height would return 0.01 because the ratio is 1-Width to 100-Height
+            //
+            //You have to cast to float, or it will round it to an int since two it's just two ints in there
+            float dimensionsRatio = (float) imageWidth /imageHeight;
+
+            int newWidth;
+            int newHeight;
+
+            //We get the difference between the width and width max and height and height max, so we scale by whichever is greater
+            if((imageWidth - maxWidth) > (imageHeight - maxHeight)) {
+
+                int offset = imageWidth - maxWidth;
+                newWidth = maxWidth;
+                newHeight = (int) (imageHeight - offset / dimensionsRatio);
+
             } else {
-                //Gets the ratio of the width to the height
-                //Example 1000 width 10 height would return 100 because the ratio is 100-Width to 1-Height
-                //Example two 10 width 1000 height would return 0.01 because the ratio is 1-Width to 100-Height
-                //
-                //You have to cast to float, or it will round it to an int since two it's just two ints in there
-                float dimensionsRatio = (float) imageWidth /imageHeight;
 
-                int newWidth;
-                int newHeight;
-
-                //We get the difference between the width and width max and height and height max, so we scale by whichever is greater
-                if((imageWidth - maxWidth) > (imageHeight - maxHeight)) {
-
-                    int offset = imageWidth - maxWidth;
-                    newWidth = maxWidth;
-                    newHeight = (int) (imageHeight - offset / dimensionsRatio);
-
-                } else {
-
-                    int offset = imageHeight - maxHeight;
-                    newHeight = maxHeight;
-                    newWidth = (int) (imageWidth - offset * dimensionsRatio);
-                }
-
-                BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
-                Graphics2D graphics2D = resizedImage.createGraphics();
-                graphics2D.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
-                graphics2D.dispose();
-
-                SimpleAttributeSet iconStyle = new SimpleAttributeSet();
-                StyleConstants.setIcon(iconStyle, new ImageIcon(resizedImage));
-
-
-                outputStyled.insertString(0, "Image " + "\n", iconStyle);
+                int offset = imageHeight - maxHeight;
+                newHeight = maxHeight;
+                newWidth = (int) (imageWidth - offset * dimensionsRatio);
             }
-            //This because otherwise it teleports you to the bottom everytime, and I'd prefer it teleport you to the top where the new things are
-            output.setCaretPosition(0);
 
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-            return false;
+            BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+
+            Graphics2D graphics2D = resizedImage.createGraphics();
+            graphics2D.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+            graphics2D.dispose();
+
+            SimpleAttributeSet iconStyle = new SimpleAttributeSet();
+            StyleConstants.setIcon(iconStyle, new ImageIcon(resizedImage));
+
+
+            outputStyled.insertString(0, "Image " + "\n", iconStyle);
         }
-        return true;
+        //This because otherwise it teleports you to the bottom everytime, and I'd prefer it teleport you to the top where the new things are
+        output.setCaretPosition(0);
+
+
     }
 
     //Clears the output textPane

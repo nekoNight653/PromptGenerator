@@ -3,7 +3,6 @@ package PromptGeneratorPackage.GUI;
 import PromptGeneratorPackage.PromptGenerator;
 import PromptGeneratorPackage.Prompts.Prompt;
 import PromptGeneratorPackage.Prompts.PromptManager;
-import PromptGeneratorPackage.Prompts.TextPrompts;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +10,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 public abstract class PromptPnl extends JPanel {
@@ -118,7 +118,7 @@ public abstract class PromptPnl extends JPanel {
     }
 
     protected void outputAllGenres() {
-        ArrayList<String> allNames = prompts().getGenreNames();
+        ArrayList<String> allNames = new ArrayList<>(List.of(prompts().getGenreNames()));
         allNames.sort(Comparator.reverseOrder());
 
         //This makes it so that there's a number counting down how many genres there are.
@@ -151,8 +151,8 @@ public abstract class PromptPnl extends JPanel {
         ArrayList<File> genres = prompts().getGenres();
         ArrayList<JComponent> inputs = new ArrayList<>();
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
+        JPanel pane = new JPanel();
+        pane.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
         JLabel number = new JLabel("Number");
@@ -163,15 +163,16 @@ public abstract class PromptPnl extends JPanel {
 
         gbc.gridx = 2;
         gbc.gridy = y;
-        panel.add(number, gbc);
+        pane.add(number, gbc);
 
         gbc.gridx = 0;
-        panel.add(genreLabel, gbc);
+        pane.add(genreLabel, gbc);
 
 
         //Not the prettiest way to separate two columns, but it works.
         String colonWithSep = ":      ";
 
+        //This creates a pane for the options pane to use
         for(File genre : genres){
 
             //The end has 6 spaces because I wanted there to be a separation...
@@ -180,24 +181,25 @@ public abstract class PromptPnl extends JPanel {
             inputs.get(inputs.size() - 1).setFont(GUI.outputFont);
             gbc.gridx = 0;
             gbc.gridy = ++y;
-            panel.add(inputs.get(inputs.size() - 1 ), gbc);
+            pane.add(inputs.get(inputs.size() - 1 ), gbc);
 
             inputs.add(new JTextField());
             inputs.get(inputs.size() - 1).setFont(GUI.outputFont);
             inputs.get(inputs.size() - 1).setPreferredSize(new Dimension((int) (screenSize.width * 0.04), (int) (screenSize.height * 0.05)));
             gbc.gridx = 2;
-            panel.add(inputs.get(inputs.size() - 1), gbc);
+            pane.add(inputs.get(inputs.size() - 1), gbc);
 
         }
 
         //If it gets too big this makes it scrollable
-        JScrollPane scrollPane = new JScrollPane(panel);
+        JScrollPane scrollPane = new JScrollPane(pane);
 
         //You have to set the width so the scroll bar actually appears and the height so the confirmation options don't go off-screen
         //I tried with min sizes and max sizes but those didn't work at all
         scrollPane.setPreferredSize(new Dimension((int) (screenSize.width * 0.21), (int) (screenSize.height * 0.3)));
 
         int result = JOptionPane.showConfirmDialog(null, scrollPane, "Random prompt specification", JOptionPane.OK_CANCEL_OPTION);
+
 
         HashMap<File, Integer> specifications = new HashMap<File, Integer>();
 
@@ -208,22 +210,15 @@ public abstract class PromptPnl extends JPanel {
             File genre = PromptGenerator.PROMPTS_FOLDER;
 
             //This is what gets the information from the JOptionPane
+            //
+            //Since it always goes label then textField we can do this
             for(JComponent comp : inputs) {
 
                 if(comp instanceof JTextField) {
-                    int num;
-                    //So that it doesn't break if they accidentally put in 1 wrong input
-                    try {
-                        //I do this because I once accidentally put a space, and they're hard to see.
-                        String input = ((JTextField) comp).getText().replace(" ", "");
-                        num = Integer.parseInt(input);
 
-                    } catch (NumberFormatException e) {
-                        //If the input is invalid we set it to 0, so we get no prompts from said file
-                        num = 0;
-                    }
-
+                    int num = getNum((JTextField) comp);
                     specifications.put(genre, num);
+
                 } else {
                     genre = prompts().getGenreFile(((JLabel) comp).getText().replace(colonWithSep, ""));
                 }
@@ -237,80 +232,97 @@ public abstract class PromptPnl extends JPanel {
         }
     }
 
+    private static int getNum(JTextField comp) {
+        int num;
+        //So that it doesn't break if they accidentally put in 1 wrong input
+        try {
+            //I do this because I once accidentally put a space, and they're hard to see.
+            String input = comp.getText().replace(" ", "");
+            num = Integer.parseInt(input);
+
+        } catch (NumberFormatException e) {
+            //If the input is invalid we set it to 0, so we get no prompts from said file
+            num = 0;
+        }
+
+        return num;
+    }
+
+
+
     //Outputs x random prompts
     //x is just the input in the textField getPromptsNum
     protected void getRandPrompts() {
         int num = getPromptNum();
         final Random random = new Random();
 
-        //If it's greater than 0 we get prompts
-        if(num > 0) {
-
-            ArrayList<Prompt> allPrompts = prompts().getPrompts(prompts().getGenres());
-            if(num >= allPrompts.size()) {
-                gui.outputln("", null);
-                outputAllPrompts();
-                gui.outputln(
-                        "\nNumber of prompts requested(" + num + ") greater than or equal to number of prompts available(" + allPrompts.size() + ").\n" +
-                                "Outputting all prompts instead.", GUI.STYLE_RED
-                );
-
-                return;
-            }
-
-
-            final HashMap<File, Integer> specifications = new HashMap<>();
-
-
-
-            HashMap<File, Integer> genreToSize = new HashMap<>();
-            //We do this a because it can stop tons of looping (before it could loop the same genre to get the size several times before it was done)
-            //And also so that if any genres don't have any prompts we can remove them from the process before it starts
-            for(File genre : prompts().getGenres()) {
-
-                int size = prompts().getPrompts(genre).size();
-                if(size == 0 ) {
-                    continue;
-                }
-
-                genreToSize.put(genre, size);
-            }
-            //This is because keySet doesn't seem to have an index that I can find
-            ArrayList<File> genres = new ArrayList<>(genreToSize.keySet());
-
-            //Here is where we actually get the random prompts
-            while(num > 0) {
-
-                int nextGenre = random.nextInt(genres.size());
-                File genre = genres.get(nextGenre);
-
-
-
-
-                if(specifications.containsKey(genre)) {
-                    specifications.put(genre, (specifications.get(genre) + 1));
-                } else {
-                    specifications.put(genre, 1);
-                }
-
-                //This just makes sure we don't go over the genres amount of available prompts
-                //So that we actually get the number of prompts requested.
-                //This doesn't break because we test if the prompts requested are >= to the number of prompts available above
-                if(specifications.get(genre) >= genreToSize.get(genre)) {
-                    genres.remove(nextGenre);
-                    genreToSize.remove(genre);
-                }
-
-                num--;
-            }
-
-            ArrayList<Prompt> randomPromptList = prompts().getXRandomPrompts(specifications);
-            outputPrompts(randomPromptList);
-
-            //Otherwise we tell the user they input a number too low
-        } else {
+        //If the number is less than or equal to 0 we bail
+        if(num <= 0) {
             gui.outputln("Tried to get " + num + " prompts. Number must be 1 or more to get prompts", GUI.STYLE_RED);
+            return;
         }
+
+        //If it's greater than or equal to the number fo prompts we have we just return them all.
+        //Rather than going through the process of getting random ones
+        ArrayList<Prompt> allPrompts = prompts().getPrompts(prompts().getGenres());
+        if(num >= allPrompts.size()) {
+
+            gui.outputln("", null);
+            outputAllPrompts();
+
+            gui.outputln(
+                    "\nNumber of prompts requested(" + num + ") greater than or equal to number of prompts available("
+                            + allPrompts.size() + ").\nOutputting all prompts instead: ", GUI.STYLE_RED
+            );
+
+            return;
+        }
+
+
+        final HashMap<File, Integer> specifications = new HashMap<>();
+
+        HashMap<File, Integer> genreToSize = new HashMap<>();
+        //We do this a because it can stop tons of looping (before it could loop the same genre to get the size several times before it was done)
+        //And also so that if any genres don't have any prompts we can remove them from the process before it starts
+        for(File genre : prompts().getGenres()) {
+
+            int size = prompts().getPrompts(genre).size();
+            if(size == 0 ) {
+                continue;
+            }
+
+            genreToSize.put(genre, size);
+        }
+
+        //This is because keySet doesn't seem to have an index that I can find
+        ArrayList<File> genres = new ArrayList<>(genreToSize.keySet());
+
+        //Here is where we get the hashmaps specifications filled out
+        //Note with how we currently do it chooses from all genres evenly we do not weight the genres based on prompt number
+        while(num > 0) {
+
+            int nextGenre = random.nextInt(genres.size());
+            File genre = genres.get(nextGenre);
+
+
+            if(specifications.containsKey(genre)) {
+                specifications.put(genre, (specifications.get(genre) + 1));
+            } else {
+                specifications.put(genre, 1);
+            }
+
+            //This just makes sure we don't go over the genres amount of available prompts in a certain genre
+            //So that we actually get the number of prompts requested. (It would go over the genre limit before and return too few prompts)
+            if(specifications.get(genre) >= genreToSize.get(genre)) {
+                genres.remove(nextGenre);
+                genreToSize.remove(genre);
+            }
+
+            num--;
+        }
+
+        ArrayList<Prompt> randomPromptList = prompts().getXRandomPrompts(specifications);
+        outputPrompts(randomPromptList);
     }
 
     protected void clearInput() {

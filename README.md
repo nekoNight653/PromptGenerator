@@ -16,10 +16,13 @@ Current version 1.2.3
 
 Changes:
 
-    Added a thread for when it tried to output lot's of prompts so users don't think it crashed 
-    (heck the person I showed it too thought that first time)
-    
-    Also is that really all it takes to make a thread?
+    Fixed the refactoring mistake that happened making my frame called PromptGeneratorPackage.PromptGenerator 
+
+    Made the outputImg function throw a BadLocation exception rather than handling it itself
+    (It didn't have a way to get the image name)
+
+    Slight improvements to the cleansliness of the code.
+
 
 Planned changes:
 

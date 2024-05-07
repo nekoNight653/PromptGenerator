@@ -1,8 +1,6 @@
 package PromptGeneratorPackage.Prompts;
 
-import PromptGeneratorPackage.GUI.PromptPnl;
 import PromptGeneratorPackage.PromptGenerator;
-import com.sun.tools.javac.Main;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
