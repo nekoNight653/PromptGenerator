@@ -1,6 +1,6 @@
 Prompt generator
 
-This is version 1.2 of the prompt generator
+This is version 1.3 of the prompt generator
 
 This version allows you to separate prompts by genre.
 
@@ -10,9 +10,9 @@ You can get random prompts either completely randomly (random genres too),
 
 or you can specify which genres and how many from said genre you want!
 
-It has image prompts and text prompts
+It has image prompts, text prompts, and a way to get prompts from all prompt types
 
-Current version 1.2.4
+Current version 1.3
 
 Changes:
 
@@ -35,7 +35,6 @@ Changes:
 
 Planned changes:
 
-    I'm going to make a way to get random prompts from all of the prompt types 
 
     I'll probably make a way to enable and disable prompt panels (I mean if I start making lot's of prompt panels it would be useful)
 
