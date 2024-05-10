@@ -69,7 +69,7 @@ public class ImagePromptPnl extends PromptPnl {
         this.setBorder(BorderFactory.createEmptyBorder());
         //This is only to set the preferred height (I just set the preferred width to the preferred width of the controlPnl)
         //I use constants in the class PromptGeneratorPackage.GUI for the size, so I can set the size from the GUI class (If I ever decide to resize them)
-        this.setPreferredSize(new Dimension(GUI.INPUT_WIDTH, GUI.PRMPT_PNL_HEIGHT));
+        this.setPreferredSize(new Dimension(GUI.PRMPT_PNLS_WIDTH, GUI.PRMPT_PNLS_HEIGHT));
         this.setLayout(new GridBagLayout());
 
         //Genre creation inputs
@@ -126,7 +126,7 @@ public class ImagePromptPnl extends PromptPnl {
 
     //Some info for our resident abstract class
     @Override
-    protected String promptType() {
+    protected String promptTypeName() {
         return "Image";
     }
 
@@ -208,10 +208,13 @@ public class ImagePromptPnl extends PromptPnl {
     @Override
     protected void deletePrompt() {
 
+        //We get the first entry of this, since it will only ever return an array of 1
+        //It's set up as an array list because that's what text prompts wanted. I wonder if there's a better way to do them both though
         String result = prompts.deletePrompt(promptToDelete.getText(), prompts.getGenreFile(genreToDeleteFrom.getSelectedItem().toString())).get(0);
         Style style = GUI.STYLE_RED;
 
-        if (result.contains(ImagePrompts.successFullyDeleted)) style = null;
+        //If it contains the string const for when a prompt is successfully deleted we set the style to orange
+        if (result.contains(ImagePrompts.successFullyDeleted)) style = GUI.STYLE_DARK_ORANGE;
         gui.outputln(result, style);
     }
 

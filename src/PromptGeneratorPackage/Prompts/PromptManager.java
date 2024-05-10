@@ -8,12 +8,16 @@ import java.util.Random;
 //A basic outline for classes that manage prompts
 //Maybe overboard?
 public interface PromptManager {
-
     //Gets all genres
     ArrayList<File> getGenres();
     //This gets the genre file from the name of the genre file
     File getGenreFile(String name);
     //Creates a new genre
+    /*
+    * returns 1 if everything went well
+    * 0 if the file already exists
+    * -1 if an unexpected error occurred
+    * */
     int createGenre(String name);
 
     //deletes a genre
@@ -52,9 +56,7 @@ public interface PromptManager {
 
 
 
-    //This method reads each genre file in the past in array
-    //it adds all prompts to the hash map with their respective file
-    //TextPrompts are contained within a single line and are not blankSpace and don't contain any *
+    //This method loops through each genre passed in and calling the getPrompts method for each of them
     default ArrayList<Prompt> getPrompts(ArrayList<File> genres) {
         //The first is a prompt and the second is the file it's contained in
         ArrayList<Prompt> promptList = new ArrayList<Prompt>();
@@ -66,13 +68,16 @@ public interface PromptManager {
     }
 
 
-    /*This gets a select amount of prompts randomly from each file
+    /*
+     * This gets a select amount of prompts randomly from each file
      * Which files it gets prompts from is decided by the key set of the hashmap "specifications"
      * It then gets x prompts from that file where x is the Integer attached to that key
      *
      * Puts the prompt(promptNotFound, genre) if it runs out of prompts in a genre
      */
-    String promptNotFound = "No more prompts";
+    //This is just because each prompt manager will have a different return for not finding a prompt
+    //We pass in the path just for the random prompts class
+    String promptNotFound(File path);
     default ArrayList<Prompt> getXRandomPrompts(HashMap<File, Integer> specifications) {
 
         ArrayList<Prompt> randomPrompts = new ArrayList<Prompt>();
@@ -85,27 +90,30 @@ public interface PromptManager {
 
             ArrayList<Prompt> prompts = getPrompts(genre);
 
+            //If it's empty we skip adding a prompt to tell the user we ran out of prompts in that genre
+            if(prompts.isEmpty()) {
+                randomPrompts.add(new Prompt(promptNotFound(genre), genre, PromptType.getType(genre)));
+                continue;
+            }
 
             int i = 0;
-            if(!prompts.isEmpty()) {
-                while (i < specifications.get(genre)) {
-                    int index = random.nextInt(prompts.size());
+            while (i < specifications.get(genre)) {
+                int index = random.nextInt(prompts.size());
 
 
-                    randomPrompts.add(prompts.get(index));
-                    prompts.remove(index);
-                    i++;
+                randomPrompts.add(prompts.get(index));
+                PromptType lastType = prompts.get(index).type();
 
-                    //This just makes sure it doesn't try and get nonexistent prompts
-                    if (prompts.isEmpty() && i < specifications.get(genre)) {
+                prompts.remove(index);
+                i++;
 
-                        randomPrompts.add(new Prompt(promptNotFound, genre));
-                        break;
-                    }
+                //This just makes sure it doesn't try and get nonexistent prompts
+                if (prompts.isEmpty() && i < specifications.get(genre)) {
 
+                    randomPrompts.add(new Prompt(promptNotFound(genre), genre, lastType));
+                    break;
                 }
-            } else  {
-                randomPrompts.add(new Prompt(promptNotFound, genre));
+
             }
 
         }

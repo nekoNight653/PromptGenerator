@@ -16,16 +16,27 @@ Current version 1.2.4
 
 Changes:
 
-    Made a panel for misc buttons like  "clear output"
+    Made the prompts panel scroll (This will be required for making any more prompt panels)
 
-    Made it so that image prompts always output on a different thread rather than just when the number requested is over 4,
-    because I fond that depending on the image they could take a while
+    Made the Prompt class tuple thing back into a record
 
-    A few more cleanliness improvements
+    Added a genFolders method to the 2 of the three prompt manager classes. It just reduces code
+
+    Made an all prompt type manager that gets prompts from anywhere
+
+    Made an all prompt type panel that outputs prompts from anywhere
+
+    Made a prompt type enum for being able to tell what type a prompt is and also for getting various things from each prompt type
+
+    Added to the Prompt record which type a prompt is
+
+    Slightly changed the gerParamedRandPrompts function to work without the getGenre from name method
 
 
 Planned changes:
 
-    I might even make a way to get random prompts from both of the prompt types
+    I'm going to make a way to get random prompts from all of the prompt types 
+
+    I'll probably make a way to enable and disable prompt panels (I mean if I start making lot's of prompt panels it would be useful)
 
     I may also make sound prompts (Sounds interesting)

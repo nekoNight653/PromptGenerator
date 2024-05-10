@@ -10,12 +10,8 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Random;
 
 public class TextPromptPnl extends PromptPnl {
-
-
-    private static final GUI gui = PromptGenerator.gui;
 
     private static final TextPrompts prompts = new TextPrompts();
 
@@ -68,7 +64,7 @@ public class TextPromptPnl extends PromptPnl {
         
         this.setBorder(BorderFactory.createEmptyBorder());
         //This is only to set the preferred height (I just set the preferred width to the preferred width of the inputPnl)
-        this.setPreferredSize(new Dimension(GUI.INPUT_WIDTH, GUI.PRMPT_PNL_HEIGHT));
+        this.setPreferredSize(new Dimension(GUI.PRMPT_PNLS_WIDTH, GUI.PRMPT_PNLS_HEIGHT));
         this.setLayout(new GridBagLayout());
 
 
@@ -122,7 +118,7 @@ public class TextPromptPnl extends PromptPnl {
     }
     //Handing over some information to our resident abstract class
     @Override
-    protected String promptType() {
+    protected String promptTypeName() {
         return "Text";
     }
 
@@ -260,7 +256,7 @@ public class TextPromptPnl extends PromptPnl {
         //Since it's on change we usually ouput the genre we also have to do it at the end, so it's not missing one
         gui.outputln("\n" + previousGenre.getName().replace(".txt", "") + ":", null);
 
-        gui.outputln("\nChosen prompts:", null);
+        gui.outputln("\nText prompts:", null);
     }
 
 }

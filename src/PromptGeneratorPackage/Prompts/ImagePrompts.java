@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 
 
 /*
@@ -31,17 +30,36 @@ public class ImagePrompts implements  PromptManager {
     public static final File IMAGE_PROMPTS_FOLDER = new File(PromptGenerator.PROMPTS_FOLDER, "Image_prompts");
 
 
+    //returns false if any of the folders didn't exist
+    //returns true if they all did
+    public boolean genFolders() {
+
+        try {
+            if(!PromptGenerator.PROMPTS_FOLDER.exists()) {
+                PromptGenerator.PROMPTS_FOLDER.mkdir();
+                IMAGE_PROMPTS_FOLDER.mkdir();
+                return false;
+            }
+            if(!IMAGE_PROMPTS_FOLDER.exists()) {
+                IMAGE_PROMPTS_FOLDER.mkdir();
+                return false;
+            }
+        } catch (SecurityException e) {
+            System.out.println("Failed to generate folders");
+            e.printStackTrace();
+            return false;
+        }
+
+
+        return true;
+    }
+
     @Override
     public ArrayList<File> getGenres() {
-        ArrayList<File> genres = new ArrayList<File>();
-        if(!PromptGenerator.PROMPTS_FOLDER.exists()) {
-            PromptGenerator.PROMPTS_FOLDER.mkdir();
-            return genres;
-        }
-        if(!IMAGE_PROMPTS_FOLDER.exists()) {
-            IMAGE_PROMPTS_FOLDER.mkdir();
-            return genres;
-        }
+        ArrayList<File> genres = new ArrayList<>();
+
+        if(!genFolders()) return genres;
+
         Collections.addAll(genres, IMAGE_PROMPTS_FOLDER.listFiles());
         return genres;
     }
@@ -59,11 +77,8 @@ public class ImagePrompts implements  PromptManager {
     @Override
     public int createGenre(String name) {
         //We don't check for if PROMPTS_FOLDER exists since it should make it if it doesn't
+        genFolders();
         try {
-            if(!PromptGenerator.PROMPTS_FOLDER.exists()) PromptGenerator.PROMPTS_FOLDER.mkdir();
-            //If the IMAGE_PROMPTS_FOLDER doesn't exist and we can't create it we return negative 1
-            if(!IMAGE_PROMPTS_FOLDER.exists()) if(!IMAGE_PROMPTS_FOLDER.mkdir()) return -1;
-
             if((new File(IMAGE_PROMPTS_FOLDER, name)).mkdir()) {
                 return 1;
             }
@@ -80,14 +95,8 @@ public class ImagePrompts implements  PromptManager {
     //Deletes everything within the file to do this of course
     @Override
     public boolean deleteGenre(String genre) {
-        if(!PromptGenerator.PROMPTS_FOLDER.exists()) {
-            PromptGenerator.PROMPTS_FOLDER.mkdir();
-            return  false;
-        }
-        if(!IMAGE_PROMPTS_FOLDER.exists()) {
-            IMAGE_PROMPTS_FOLDER.mkdir();
-            return false;
-        }
+
+        if(!genFolders()) return false;
         File genreToDelete = new File(IMAGE_PROMPTS_FOLDER, genre);
 
         ArrayList<File> filesToDelete = new ArrayList<>();
@@ -118,57 +127,54 @@ public class ImagePrompts implements  PromptManager {
     public ArrayList<Prompt> getPrompts(File genre) {
         ArrayList<Prompt> prompts = new ArrayList<Prompt>();
 
-        if (!genre.exists()) {
+
+
+        if (!genFolders() || !genre.exists()) {
             return prompts;
         }
 
         for(File prompt : genre.listFiles()) {
-            prompts.add(new Prompt(prompt.getPath(), genre));
+            prompts.add(new Prompt(prompt.getPath(), genre, PromptType.IMAGE));
         }
 
         return prompts;
     }
     //This creates the prompt missing png if it doesn't exist
-    public File makePromptMissingPNG() {
+    //
+    //If it fails to make the picture it returns. This shouldn't happen normally, but it can technically return null
+    public File promptMissingPNG() {
+
         File stuff = new File(PromptGenerator.PROMPTS_FOLDER, "stuff");
+
+        //We technically don't need one of the folders it generates for this, but we'll generate that folder very soon anyway I'm sure
+        genFolders();
         if(!stuff.exists()) stuff.mkdir();
 
         File promptMissing = new File(stuff, "NoMorePrompts.png");
+
         if(promptMissing.exists()) return promptMissing;
 
         else {
-            BufferedImage promptMissingPng = new BufferedImage(110, 15, BufferedImage.TYPE_BYTE_BINARY);
+            BufferedImage promptMissingPng = new BufferedImage(100, 13, BufferedImage.TYPE_BYTE_BINARY);
             Graphics2D graphics2D = promptMissingPng.createGraphics();
-            graphics2D.drawString("No more images!", 10F, 10F);
+            graphics2D.drawString("Out of images!", 10F, 10F);
             graphics2D.dispose();
 
             try {
-//                String promptMissingSansPNG = promptMissing.getPath().replace(".png", "");
                 ImageIO.write(promptMissingPng, "png", promptMissing);
             } catch (IOException e) {
                 System.out.println("Failed to create missing prompt image");
                 e.printStackTrace();
+                return null;
             }
 
         }
 
         return  promptMissing;
     }
-
-    //All this does is if there are missing prompts it sets them to the prompt missing png
-    //Other than that it's the same as the one in the PromptManager interface
     @Override
-    public ArrayList<Prompt> getXRandomPrompts(HashMap<File, Integer> specifications) {
-        ArrayList<Prompt> randomPrompts = PromptManager.super.getXRandomPrompts(specifications);
-        for(Prompt prompt : randomPrompts) {
-            if(prompt.prompt().equals(PromptManager.promptNotFound)) {
-
-                File promptMissing = makePromptMissingPNG();
-
-                prompt.setPrompt(promptMissing.getPath());
-            }
-        }
-        return randomPrompts;
+    public String promptNotFound(File path) {
+        return promptMissingPNG().getPath();
     }
 
     /*
@@ -186,7 +192,7 @@ public class ImagePrompts implements  PromptManager {
     @Override
     public int addPrompt(String prompt, File genre) {
 
-        if(!genre.exists()) return -1;
+        if(!genFolders() || !genre.exists()) return -1;
 
         File fileToCopy = new File(prompt);
         if(!fileToCopy.exists()) return  0;
@@ -216,10 +222,11 @@ public class ImagePrompts implements  PromptManager {
     public ArrayList<String> deletePrompt(String unwantedPrompt, File genre) {
         ArrayList<String> results = new ArrayList<>();
 
-        if (!genre.exists()) {
+        if (!genFolders() || !genre.exists()) {
             results.add("Genre \"" + genre.getName() + "\" doesn't exist");
             return  results;
         }
+
         File promptToDelete = new File(genre, unwantedPrompt);
         if(promptToDelete.delete()) {
             results.add("Prompt \"" + unwantedPrompt + "\" deleted" + successFullyDeleted);

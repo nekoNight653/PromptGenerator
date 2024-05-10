@@ -13,14 +13,16 @@ public class GUI {
     //This just gets the percents of the screen width that the input and output panels use, since they will together use all of the screen.
     //I have it like this, so I can easily change it later
     private static final float PROMPT_PNL_WIDTH_PERCENT = 0.5F;
-    private static final float MISC_CNTRL_PNL_WIDTH_PERCENT = (1 - PROMPT_PNL_WIDTH_PERCENT)/4;
+    private static final float MISC_CNTRL_PNL_WIDTH_PERCENT = (1 - PROMPT_PNL_WIDTH_PERCENT)/4F;
     private static final float OUTPUT_WIDTH_PERCENT = 1 - (PROMPT_PNL_WIDTH_PERCENT + MISC_CNTRL_PNL_WIDTH_PERCENT);
 
-    //This is the width of the inputPanel
-    public static final int INPUT_WIDTH = (int) (screenSize.width * PROMPT_PNL_WIDTH_PERCENT);
+    //This is the width of the promptPanel
+    public static final int PROMPT_PNL_WIDTH = (int) (screenSize.width * PROMPT_PNL_WIDTH_PERCENT);
 
-    //This is the height of both of the prompt panels (TextPromptPnl and ImagePromptPnl)
-    public static final int PRMPT_PNL_HEIGHT = (int) (screenSize.height * 0.3);
+    //This is the height of the sub-panels in the prompt panel.. I'm not sure that it actually does anything though
+    public static final int PRMPT_PNLS_HEIGHT = (int) (screenSize.height * 0.4);
+    //This is the width for the sub-panels in the prompt panel.. I'm not sure that it actually does anything
+    public static final int PRMPT_PNLS_WIDTH = (int) (PROMPT_PNL_WIDTH*0.9);
 
     //This is the size of the output panel (Not sure if I really need this as a constant)
     public static final int OUTPUT_WIDTH = (int) (screenSize.width * OUTPUT_WIDTH_PERCENT);
@@ -28,8 +30,8 @@ public class GUI {
     public static final int MISC_CNTRL_PNL_WIDTH = (int) (screenSize.width * MISC_CNTRL_PNL_WIDTH_PERCENT);
 
     //The fonts for the input panel and output panel
-    public static final Font inputFont = new Font("serif", Font.PLAIN, 30);
-    public static final Font outputFont = new Font("serif", Font.PLAIN, 25);
+    public static final Font INPUT_FONT = new Font("serif", Font.PLAIN, 30);
+    public static final Font OUTPUT_FONT = new Font("serif", Font.PLAIN, 25);
 
     /*
      * Dark orange is used for text that is important such as writing and deleting prompts
@@ -67,10 +69,10 @@ public class GUI {
     */
     private JPanel promptPnl, miscCntrlPnl, outputPanel;
     //The labels just tell what the components below it are for
-    private JLabel textPrmptLbl, imagePrmptLbl, miscBttnsLbl;
+    private JLabel textPrmptLbl, imagePrmptLbl, randomPrmptLbl, miscBttnsLbl;
     //For what ever I want to display, such as prompt added or which prompts were got
     private StyledDocument outputStyled;
-    private JScrollPane outputScrollable;
+    private JScrollPane outputScrollable, promptPnlScrollable;
     private JTextPane output;
 
     private JButton clearOutput;
@@ -81,6 +83,7 @@ public class GUI {
 
         TextPromptPnl textPromptsPnl = new TextPromptPnl();
         ImagePromptPnl imagePromptsPnl = new ImagePromptPnl();
+        AllPromptPnl allPromptPnl = new AllPromptPnl();
 
         /*
         * Up here we declare and modify the panels that hold all the most the components
@@ -106,7 +109,7 @@ public class GUI {
          */
 
         output = new JTextPane();
-        output.setFont(outputFont);
+        output.setFont(OUTPUT_FONT);
 
         outputScrollable = new JScrollPane(output);
         outputStyled = output.getStyledDocument();
@@ -124,7 +127,7 @@ public class GUI {
 
         //The misc control panel and all it's elements
         miscCntrlPnl = new JPanel();
-        miscCntrlPnl.setFont(inputFont);
+        miscCntrlPnl.setFont(INPUT_FONT);
         miscCntrlPnl.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED, Color.GRAY, Color.BLACK));
         miscCntrlPnl.setPreferredSize(new Dimension(MISC_CNTRL_PNL_WIDTH, screenSize.height));
         miscCntrlPnl.setLayout(new GridBagLayout());
@@ -133,35 +136,44 @@ public class GUI {
         gbc.fill = GridBagConstraints.BOTH;
 
         miscBttnsLbl = new JLabel("Misc");
-        miscBttnsLbl.setFont(inputFont);
+        miscBttnsLbl.setFont(INPUT_FONT);
         gbc.gridy = 0;
         miscCntrlPnl.add(miscBttnsLbl);
 
         clearOutput = new JButton(CLEAR_OUTPUT_BUTTON_NAME);
         clearOutput.addActionListener(e -> clearOutput());
-        clearOutput.setFont(inputFont);
+        clearOutput.setFont(INPUT_FONT);
         gbc.gridy = 1;
         miscCntrlPnl.add(clearOutput, gbc);
 
 
         //The prompt panel and all it's elements
         promptPnl = new JPanel();
-        promptPnl.setFont(inputFont);
+        promptPnl.setFont(INPUT_FONT);
         promptPnl.setBorder(BorderFactory.createEmptyBorder());
-        promptPnl.setPreferredSize(new Dimension(INPUT_WIDTH, screenSize.height));
+        promptPnl.setPreferredSize(new Dimension(PROMPT_PNL_WIDTH, screenSize.height));
         promptPnl.setLayout(new BoxLayout(promptPnl, BoxLayout.Y_AXIS));
 
+        promptPnlScrollable = new JScrollPane(promptPnl);
+        promptPnlScrollable.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
         textPrmptLbl = new JLabel("Text prompts");
-        textPrmptLbl.setFont(inputFont);
+        textPrmptLbl.setFont(INPUT_FONT);
         promptPnl.add(textPrmptLbl);
 
         promptPnl.add(textPromptsPnl);
 
         imagePrmptLbl = new JLabel("Image prompts");
-        imagePrmptLbl.setFont(inputFont);
+        imagePrmptLbl.setFont(INPUT_FONT);
         promptPnl.add(imagePrmptLbl);
 
         promptPnl.add(imagePromptsPnl);
+
+        randomPrmptLbl = new JLabel("All prompts");
+        randomPrmptLbl.setFont(INPUT_FONT);
+        promptPnl.add(randomPrmptLbl);
+
+        promptPnl.add(allPromptPnl);
 
         frame.setLayout(new BorderLayout());
         frame.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
@@ -171,7 +183,7 @@ public class GUI {
         frame.setVisible(true);
 
         frame.add(outputPanel, BorderLayout.EAST);
-        frame.add(promptPnl, BorderLayout.CENTER);
+        frame.add(promptPnlScrollable, BorderLayout.CENTER);
         frame.add(miscCntrlPnl, BorderLayout.WEST);
     }
 

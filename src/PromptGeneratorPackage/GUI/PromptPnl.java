@@ -28,7 +28,7 @@ public abstract class PromptPnl extends JPanel {
      */
     protected void createButton(JButton button, Runnable runnable, int x, int y) {
         button.addActionListener(e -> runnable.run());
-        button.setFont(GUI.inputFont);
+        button.setFont(GUI.INPUT_FONT);
         GBC.gridx = x;
         GBC.gridy = y;
         this.add(button, GBC);
@@ -41,7 +41,7 @@ public abstract class PromptPnl extends JPanel {
      */
     protected void createTextField(JTextField textField, Runnable runnable, int x, int y) {
         textField.addActionListener(e -> runnable.run());
-        textField.setFont(GUI.inputFont);
+        textField.setFont(GUI.INPUT_FONT);
         GBC.gridx = x;
         GBC.gridy = y;
         this.add(textField, GBC);
@@ -63,7 +63,7 @@ public abstract class PromptPnl extends JPanel {
     *
     */
     protected  void createComboBox(JComboBox comboBox, int x, int y) {
-        comboBox.setFont(GUI.inputFont);
+        comboBox.setFont(GUI.INPUT_FONT);
         GBC.gridx = x;
         GBC.gridy = y;
         this.add(comboBox, GBC);
@@ -76,7 +76,7 @@ public abstract class PromptPnl extends JPanel {
     //Part of me wonders if I should do this because without these I could just make this into an interface (Since it would do less)
 
     //This is just for output currently. It does start the line so capitalization is recommended
-    abstract protected String promptType();
+    abstract protected String promptTypeName();
     //This is going to be whatever prompt manager class is in use like for image prompts the class ImagePrompts
     abstract protected PromptManager prompts();
     //A string which is what ever genre your user currently plans to add
@@ -98,12 +98,12 @@ public abstract class PromptPnl extends JPanel {
         String genreName = genreToAdd();
         int result = prompts().createGenre(genreName);
         if(result == 1) {
-            gui.outputln(promptType() + " genre \"" + genreName + "\" created.", GUI.STYLE_DARK_ORANGE);
+            gui.outputln(promptTypeName() + " genre \"" + genreName + "\" created.", GUI.STYLE_DARK_ORANGE);
             genreExistenceUpdate();
         } else if(result == 0) {
-            gui.outputln(promptType() + " genre \"" + genreName + "\" already exists.", GUI.STYLE_RED);
+            gui.outputln(promptTypeName() + " genre \"" + genreName + "\" already exists.", GUI.STYLE_RED);
         }  else {
-            gui.outputln("Some security exception creating " + promptType().toLowerCase() + " genre \"" + genreName + "\"", GUI.STYLE_RED);
+            gui.outputln("Some security exception creating " + promptTypeName().toLowerCase() + " genre \"" + genreName + "\"", GUI.STYLE_RED);
         }
 
     }
@@ -111,10 +111,10 @@ public abstract class PromptPnl extends JPanel {
     protected void deleteGenre() {
         String genreName = genreToDelete();
         if(prompts().deleteGenre(genreName)){
-            gui.outputln(promptType() + " genre \"" + genreName + "\" and all it's contents deleted", GUI.STYLE_DARK_ORANGE);
+            gui.outputln(promptTypeName() + " genre \"" + genreName + "\" and all it's contents deleted", GUI.STYLE_DARK_ORANGE);
             genreExistenceUpdate();
         }
-        else gui.outputln("Failed to delete " + promptType() + " genre \"" + genreName + "\"", GUI.STYLE_RED);
+        else gui.outputln("Failed to delete " + promptTypeName() + " genre \"" + genreName + "\"", GUI.STYLE_RED);
     }
 
     protected void outputAllGenres() {
@@ -130,7 +130,7 @@ public abstract class PromptPnl extends JPanel {
             //We have the spaces, so it's an indented list.
             gui.outputln( "   " + --genreNum + ": " + name, null);
         }
-        gui.outputln(promptType() + " genres: ", null);
+        gui.outputln(promptTypeName() + " genres: ", null);
         gui.outputln("", null);
     }
     abstract protected void addPrompt();
@@ -169,22 +169,20 @@ public abstract class PromptPnl extends JPanel {
         pane.add(genreLabel, gbc);
 
 
-        //Not the prettiest way to separate two columns, but it works.
-        String colonWithSep = ":      ";
 
         //This creates a pane for the options pane to use
         for(File genre : genres){
 
             //The end has 6 spaces because I wanted there to be a separation...
             //It's hacky but it works
-            inputs.add(new JLabel(genre.getName().replace(".txt", "") + colonWithSep));
-            inputs.get(inputs.size() - 1).setFont(GUI.outputFont);
+            inputs.add(new JLabel(genre.getName().replace(".txt", "") + ":      "));
+            inputs.get(inputs.size() - 1).setFont(GUI.OUTPUT_FONT);
             gbc.gridx = 0;
             gbc.gridy = ++y;
             pane.add(inputs.get(inputs.size() - 1 ), gbc);
 
             inputs.add(new JTextField());
-            inputs.get(inputs.size() - 1).setFont(GUI.outputFont);
+            inputs.get(inputs.size() - 1).setFont(GUI.OUTPUT_FONT);
             inputs.get(inputs.size() - 1).setPreferredSize(new Dimension((int) (screenSize.width * 0.04), (int) (screenSize.height * 0.05)));
             gbc.gridx = 2;
             pane.add(inputs.get(inputs.size() - 1), gbc);
@@ -209,6 +207,8 @@ public abstract class PromptPnl extends JPanel {
             //It will always go Label then textField so this will be reassigned before it even does  anything
             File genre = PromptGenerator.PROMPTS_FOLDER;
 
+            //Because order is guaranteed we just use the genre list to get which genre it is
+            int nextGenreIndex = 0;
             //This is what gets the information from the JOptionPane
             //
             //Since it always goes label then textField we can do this
@@ -220,7 +220,8 @@ public abstract class PromptPnl extends JPanel {
                     specifications.put(genre, num);
 
                 } else {
-                    genre = prompts().getGenreFile(((JLabel) comp).getText().replace(colonWithSep, ""));
+                    genre = genres.get(nextGenreIndex);
+                    nextGenreIndex++;
                 }
             }
 

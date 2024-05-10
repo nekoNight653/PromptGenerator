@@ -12,14 +12,35 @@ public class TextPrompts implements PromptManager {
     public static final File TEXT_PROMPT_FOLDER = new File(PromptGenerator.PROMPTS_FOLDER, "Text_prompts");
 
 
+    //returns false if any of the folders didn't exist
+    //returns true if they all did
+    public boolean genFolders() {
+        try{
+
+            if (!PromptGenerator.PROMPTS_FOLDER.exists()) {
+                PromptGenerator.PROMPTS_FOLDER.mkdir();
+                TEXT_PROMPT_FOLDER.mkdir();
+                return false;
+            }
+            if (!TEXT_PROMPT_FOLDER.exists()) {
+                TEXT_PROMPT_FOLDER.mkdir();
+                return false;
+            }
+
+        } catch (SecurityException e) {
+
+            System.out.println("Failed to generate folders");
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     //Returns an array list of all the files in the prompt folder
     @Override
     public ArrayList<File> getGenres() {
         ArrayList<File> genres = new ArrayList<File>();
-        if(!TEXT_PROMPT_FOLDER.exists()) {
-            TEXT_PROMPT_FOLDER.mkdir();
-            return genres;
-        }
+        if(!genFolders()) return genres;
 
         Collections.addAll(genres, TEXT_PROMPT_FOLDER.listFiles());
         return genres;
@@ -52,8 +73,7 @@ public class TextPrompts implements PromptManager {
      */
     @Override
     public int createGenre(String name) {
-        if(!PromptGenerator.PROMPTS_FOLDER.exists()) PromptGenerator.PROMPTS_FOLDER.mkdir();
-        if(!TEXT_PROMPT_FOLDER.exists()) TEXT_PROMPT_FOLDER.mkdir();
+        genFolders();
 
         File newGenre = new File (TEXT_PROMPT_FOLDER, name + ".txt");
 
@@ -97,14 +117,9 @@ public class TextPrompts implements PromptManager {
     //Takes a string without the .txt I could have made it take a file, but I don't need it like that
     @Override
     public boolean deleteGenre(String genreName) {
-        if(!PromptGenerator.PROMPTS_FOLDER.exists()) {
-            PromptGenerator.PROMPTS_FOLDER.mkdir();
-            return false;
-        }
-        if(!TEXT_PROMPT_FOLDER.exists()) {
-            TEXT_PROMPT_FOLDER.mkdir();
-            return false;
-        }
+
+        if (!genFolders()) return false;
+
         File genre = new File(TEXT_PROMPT_FOLDER, genreName + ".txt");
         return genre.delete();
     }
@@ -118,7 +133,7 @@ public class TextPrompts implements PromptManager {
      */
     @Override
     public ArrayList<Prompt> getPrompts(File genre){
-        ArrayList<Prompt> promptList = new ArrayList<Prompt>();
+        ArrayList<Prompt> promptList = new ArrayList<>();
 
         if(!genre.exists()) {
             return promptList;
@@ -143,7 +158,7 @@ public class TextPrompts implements PromptManager {
             while ((line = reader.readLine()) != null) {
 
                 if (!line.contains("*") && !line.isBlank()) {
-                    promptList.add(new Prompt(line, genre));
+                    promptList.add(new Prompt(line, genre, PromptType.TEXT));
                 }
             }
             reader.close();
@@ -169,11 +184,8 @@ public class TextPrompts implements PromptManager {
      */
     @Override
     public int addPrompt(String prompt, File genre) {
-        //Creates the file TextPrompts if it doesn't exist
 
-        if(!PromptGenerator.PROMPTS_FOLDER.exists()) PromptGenerator.PROMPTS_FOLDER.mkdir();
-        if(!TEXT_PROMPT_FOLDER.exists()) TEXT_PROMPT_FOLDER.mkdir();
-
+        genFolders();
         if(!genre.exists()) return -1;
 
         if (prompt.contains("*") || prompt.isBlank()) return 0;
@@ -203,18 +215,14 @@ public class TextPrompts implements PromptManager {
     public ArrayList<String> deletePrompt(String unwantedPrompt, File genre) {
         ArrayList<String> deletedPrompts = new ArrayList<String>();
 
-        if(!PromptGenerator.PROMPTS_FOLDER.exists()) {
-            PromptGenerator.PROMPTS_FOLDER.mkdir();
-            return deletedPrompts;
-        }
-        if(!TEXT_PROMPT_FOLDER.exists()){
-            TEXT_PROMPT_FOLDER.mkdir();
-            return deletedPrompts;
-        }
+        //We make sure all the required folders exist
+        if(!genFolders()) return deletedPrompts;
+
         if(!genre.exists()){
             return deletedPrompts;
         }
 
+        //We get all the lines as a list
         List<String> lines;
         try {
             lines = Files.readAllLines(genre.toPath());
@@ -225,6 +233,7 @@ public class TextPrompts implements PromptManager {
             return deletedPrompts;
         }
 
+        //We create a writer
         OutputStreamWriter osw;
         BufferedWriter buffWriter;
         try {
@@ -240,34 +249,48 @@ public class TextPrompts implements PromptManager {
 
         //Here's where we actually rewrite the file without the prompt in it
         try {
-            //Since it's a fencepost problem as far as \n go
-            if (!lines.get(0).equals(unwantedPrompt)) {
-                buffWriter.write(lines.get(0));
-            } else {
-                deletedPrompts.add(lines.get(0));
-            }
+            /*
+            * Since it's a fencepost problem as far as \n go
+            * If we put the \n at the end it would always end the  file 1 longer than it was before,
+            *  and when we put it at the start it always adds 1 more to the start,
+            *  so we have to write the first line before the loop, and put the newlines in the loop
+            */
+            if (!writeLine(buffWriter, lines.get(0), unwantedPrompt)) deletedPrompts.add(lines.get(0));
             lines.remove(0);
 
             //Looping through the file to rewrite it without the specified string
             for (String line : lines) {
-                if (!line.equals(unwantedPrompt)) {
-
-                    buffWriter.write("\n" + line);
-
-                } else {
-                    deletedPrompts.add(line);
-                }
+                //We add a newline here, so it actually spaces the lines
+                if(!writeLine(buffWriter, "\n" + line, unwantedPrompt)) deletedPrompts.add(line);
             }
             buffWriter.close();
+
         } catch (IOException e) {
             System.out.println("Problem writing to genre \"" + genre + "\"");
             return deletedPrompts;
         }
 
-        System.out.println("these " + deletedPrompts + " prompts have been deleted");
+        System.out.println("these " + deletedPrompts + " prompts have been deleted from genre \"" + genre + "\"");
         return deletedPrompts;
     }
+    //This is just used in the delete prompt method to declare whether a line should be written
 
+    //Side note the boolean inputs are always inverted. I just thought it should return true if it wrote the line,
+    // but I wanted to execute stuff only when it hadn't written the line
+    private boolean writeLine(BufferedWriter buffWriter, String line, String unwantedLine) throws IOException {
+        if (!line.equals(unwantedLine)) {
+
+            buffWriter.write(line);
+            return true;
+
+        }
+        return false;
+    }
+
+    @Override
+    public String promptNotFound(File path) {
+        return "No more prompts";
+    }
 
     /*
      * I override this next method because I wanted a low chance for it to give an extra prompt of "Surprise extra prompt! 日本語で書きます"
@@ -283,7 +306,7 @@ public class TextPrompts implements PromptManager {
         Random random = new Random();
 
         if(random.nextInt(30) == 0) {
-            randPrompts.add(new Prompt("Surprise extra prompt! 日本語で書きます", TEXT_PROMPT_FOLDER));
+            randPrompts.add(new Prompt("Surprise extra prompt! 日本語で書きます", TEXT_PROMPT_FOLDER, PromptType.TEXT));
         }
         return randPrompts;
     }
