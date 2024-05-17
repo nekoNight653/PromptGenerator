@@ -12,30 +12,16 @@ or you can specify which genres and how many from said genre you want!
 
 It has image prompts, text prompts, and a way to get prompts from all prompt types
 
-Current version 1.3
+Current version 1.3.1 (A very small o.o.1)
 
 Changes:
 
-    Made the prompts panel scroll (This will be required for making any more prompt panels)
-
-    Made the Prompt class tuple thing back into a record
-
-    Added a genFolders method to the 2 of the three prompt manager classes. It just reduces code
-
-    Made an all prompt type manager that gets prompts from anywhere
-
-    Made an all prompt type panel that outputs prompts from anywhere
-
-    Made a prompt type enum for being able to tell what type a prompt is and also for getting various things from each prompt type
-
-    Added to the Prompt record which type a prompt is
-
-    Slightly changed the gerParamedRandPrompts function to work without the getGenre from name method
+    Minor output improvements
 
 
 Planned changes:
 
 
-    I'll probably make a way to enable and disable prompt panels (I mean if I start making lot's of prompt panels it would be useful)
+    I might make a way to enable and disable prompt panels (I mean if I start making lot's of prompt panels it would be useful)
 
-    I may also make sound prompts (Sounds interesting)
+    I may also make sound prompts (Sounds kinda interesting)

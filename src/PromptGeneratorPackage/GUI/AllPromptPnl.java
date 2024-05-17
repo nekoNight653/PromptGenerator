@@ -87,12 +87,16 @@ public class AllPromptPnl extends PromptPnl{
     @Override
     protected void outputPrompts(ArrayList<Prompt> promptList) {
 
+        //I make it dark orange style, because I think it can be easy to miss
+        gui.outputln(")\n\n", GUI.STYLE_DARK_ORANGE);
+
         ArrayList<ArrayList<Prompt>> typeSeparatedPrompts = new ArrayList<>();
         PromptType previoustype = null;
 
         for(Prompt prompt : promptList) {
 
             if(previoustype != prompt.type()) {
+
                 typeSeparatedPrompts.add(new ArrayList<>());
                 previoustype = prompt.type();
             }
@@ -100,12 +104,38 @@ public class AllPromptPnl extends PromptPnl{
 
             typeSeparatedPrompts.get(index).add(prompt);
         }
+        ImagePromptPnl imagePnl = null;
 
         for(ArrayList<Prompt> prompts : typeSeparatedPrompts) {
 
             PromptPnl pnl = PromptType.getPanel(prompts.get(0).type());
             pnl.outputPrompts(prompts);
 
+            if(pnl instanceof  ImagePromptPnl) imagePnl = (ImagePromptPnl) pnl;
+
+        }
+
+        if(imagePnl == null) {
+            gui.outputln("All prompts got(", GUI.STYLE_DARK_ORANGE);
+        } else {
+
+            Thread imagePromptThread = imagePnl.getThread();
+            //I find it a bit weird to make a thread to do something at the end of a thread, but it works
+            if(imagePromptThread.isAlive()) {
+                Thread tempThread = new Thread(() -> {
+
+                    try {
+                        imagePromptThread.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    gui.outputln("All prompts got(", GUI.STYLE_DARK_ORANGE);
+                });
+                tempThread.start();
+            } else {
+                gui.outputln("All prompts got(", GUI.STYLE_DARK_ORANGE);
+            }
         }
 
     }

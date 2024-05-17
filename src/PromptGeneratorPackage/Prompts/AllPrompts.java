@@ -18,13 +18,11 @@ public class AllPrompts implements PromptManager {
     @Override
     public ArrayList<Prompt> getPrompts(File genre) {
 
-        ArrayList<Prompt> prompts = new ArrayList<>();
         PromptManager manager = PromptType.getManager(genre);
 
-        if(manager == null) return prompts;
+        if(manager == null) return new ArrayList<Prompt>();
 
-        prompts.addAll( manager.getPrompts(genre) );
-        return prompts;
+        return manager.getPrompts(genre);
     }
     //This will get the file from the name of the genre file
     @Override

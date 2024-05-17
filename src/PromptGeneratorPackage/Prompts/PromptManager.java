@@ -96,6 +96,7 @@ public interface PromptManager {
                 continue;
             }
 
+            //Get random prompts
             int i = 0;
             while (i < specifications.get(genre)) {
                 int index = random.nextInt(prompts.size());

@@ -218,11 +218,14 @@ public class ImagePromptPnl extends PromptPnl {
         gui.outputln(result, style);
     }
 
-
+    private Thread outputImages = null;
+    //This is so that various classes using this can wait until after the thread finishes
+    public Thread getThread() {return outputImages;}
+    //Just calls a thread because images can take a while
     @Override
     protected void outputPrompts(ArrayList<Prompt> promptList) {
 
-        Thread outputImages = new Thread(() -> outputPromptLoop(promptList));
+        outputImages = new Thread(() -> outputPromptLoop(promptList));
         outputImages.start();
 
     }
@@ -267,7 +270,7 @@ public class ImagePromptPnl extends PromptPnl {
                     gui.outputln("Image prompt \"" + promptName + "\" not found", GUI.STYLE_RED);
                 }
             }
-            gui.outputln("Image prompts got: ", null);
+            gui.outputln("\nImage prompts got:\n ", null);
 
         } catch (IOException e) {
 
